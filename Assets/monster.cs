@@ -6,13 +6,15 @@ public enum MonsterState
 {
     IDLE,
     WALKING,
-    ATTACKING
+    ATTACKING,
+    DYING
 };
 
 public class monster : MonoBehaviour
 {
-    const float STATE_THRESHOLD = 1.3F;
+    const float ATTACK_RANGE = 2.5F;
     const float MAX_HEALTH = 100F;
+    const float DEATH_ANIMATION_DURATION = 3F;
 
     public GameObject prefab;
 
@@ -23,6 +25,7 @@ public class monster : MonoBehaviour
     private GameObject target;
     private GameObject lifeBar;
     private float attackDelay = 0;
+    private float death_countdown = DEATH_ANIMATION_DURATION;
 
     // Start is called before the first frame update
     void Start()
@@ -37,6 +40,19 @@ public class monster : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (attackDelay > 0)
+        {
+            attackDelay -= Time.deltaTime;
+        }
+
+        if (health <= 0)
+        {
+            state = MonsterState.DYING;
+            GetComponentInChildren<Animator>().Play("Armature|Die");
+            Destroy(lifeBar);
+            Destroy(GetComponent<Rigidbody>());
+            Destroy(GetComponent<BoxCollider>());
+        } else
         {
             RectTransform t = lifeBar.GetComponent<RectTransform>();
 
@@ -45,25 +61,16 @@ public class monster : MonoBehaviour
             lifeBar.GetComponent<UnityEngine.UI.Slider>().value = health / MAX_HEALTH;
         }
 
-        if (attackDelay > 0)
-        {
-            attackDelay -= Time.deltaTime;
-        }
-
-        if (health <= 0)
-        {
-            Destroy(transform.gameObject);
-            Destroy(lifeBar);
-        }
-
         switch (state)
         {
             case MonsterState.IDLE:
+                GetComponentInChildren<Animator>().Play("Armature|Idle");
+
                 GameObject[] monsters = GameObject.FindGameObjectsWithTag("monster");
 
                 foreach (GameObject m in monsters)
                 {
-                    if (m != transform.gameObject)
+                    if (m != transform.gameObject && m.GetComponent<monster>().state != MonsterState.DYING)
                     {
                         target = m;
                         state = MonsterState.WALKING;
@@ -74,10 +81,13 @@ public class monster : MonoBehaviour
                 break;
             case MonsterState.WALKING:
                 {
-                    if (target != null)
+                    GetComponentInChildren<Animator>().Play("Armature|Walk");
+
+                    if (target != null && target.GetComponent<monster>().state != MonsterState.DYING)
                     {
                         Vector3 dir = target.transform.position - transform.position;
-                        if (dir.magnitude > STATE_THRESHOLD)
+                        transform.rotation = Quaternion.LookRotation(dir);
+                        if (dir.magnitude > ATTACK_RANGE)
                         {
                             dir.Normalize();
 
@@ -97,10 +107,13 @@ public class monster : MonoBehaviour
                 }
             case MonsterState.ATTACKING:
                 {
-                    if (target != null)
+                    GetComponentInChildren<Animator>().Play("Armature|Attack");
+
+                    if (target != null && target.GetComponent<monster>().state != MonsterState.DYING)
                     {
                         Vector3 dir = target.transform.position - transform.position;
-                        if (dir.magnitude <= STATE_THRESHOLD)
+                        transform.rotation = Quaternion.LookRotation(dir);
+                        if (dir.magnitude <= ATTACK_RANGE)
                         {
                             if (attackDelay <= 0) {
                                 target.GetComponent<monster>().health -= attack;
@@ -116,6 +129,15 @@ public class monster : MonoBehaviour
                     {
                         state = MonsterState.IDLE;
                     }
+                    break;
+                }
+            case MonsterState.DYING:
+                {
+                    if (death_countdown < 0) {
+                        Destroy(transform.gameObject);
+                    }
+                    death_countdown -= Time.deltaTime;
+
                     break;
                 }
         }
