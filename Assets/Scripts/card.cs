@@ -9,6 +9,8 @@ public class card : MonoBehaviour
 
     public cardData stats;
 
+    private Rect player1Area = new Rect(-16.7F, -50, 33.4F, 15);
+
     // Start is called before the first frame update
     void Start()
     {
@@ -31,11 +33,15 @@ public class card : MonoBehaviour
         {
             if (hit.transform.gameObject.tag != "hand_card")
             {
-                Transform t = Instantiate(prefab.transform, hit.point, Quaternion.identity);
-                monster m = t.gameObject.GetComponent<monster>();
-                m.stats = stats;
+                if (player1Area.Contains(new Vector2(hit.point.x, hit.point.z)))
+                {
+                    Transform t = Instantiate(prefab.transform, hit.point, Quaternion.identity);
+                    monster m = t.gameObject.GetComponent<monster>();
+                    m.stats = stats;
+                    m.team = Random.Range(0,4);
 
-                Destroy(transform.gameObject);
+                    Destroy(transform.gameObject);
+                }
             }
         }
     }

@@ -64,6 +64,7 @@
     <Compile Include="Assets\Scripts\card.cs" />
     <Compile Include="Assets\Scripts\monster.cs" />
     <Compile Include="Assets\Scripts\move.cs" />
+    <Compile Include="Assets\Scripts\sliderColor.cs" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>C:/Users/Lucas/Documents/automatic-card-game/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>

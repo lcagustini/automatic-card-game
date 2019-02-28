@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum MonsterState
 {
@@ -14,10 +15,14 @@ public class monster : MonoBehaviour
 {
     const float DEATH_ANIMATION_DURATION = 3F;
 
+    // could be const but the compiler doesn't think so
+    private Color[] team_colors = {Color.cyan, new Color(1, 0.5f, 0), new Color(0.5F, 0, 1), Color.yellow};
+
     public GameObject prefab;
 
     public cardData stats;
     public int health;
+    public int team;
 
     private MonsterState state = MonsterState.IDLE;
     private GameObject target;
@@ -59,6 +64,7 @@ public class monster : MonoBehaviour
             Vector3 pos = new Vector3(-2.5F, 3, 0);
             t.anchoredPosition = Camera.main.WorldToScreenPoint(transform.position + pos);
             lifeBar.GetComponent<UnityEngine.UI.Slider>().value = health / stats.maxHealth;
+            lifeBar.GetComponent<sliderColor>().fill.color = team_colors[team];
         }
 
         switch (state)
@@ -70,7 +76,8 @@ public class monster : MonoBehaviour
 
                 foreach (GameObject m in monsters)
                 {
-                    if (m != transform.gameObject && m.GetComponent<monster>().state != MonsterState.DYING)
+                    monster m_class = m.GetComponent<monster>();
+                    if (m != transform.gameObject && m_class.state != MonsterState.DYING && m_class.team != team)
                     {
                         target = m;
                         state = MonsterState.WALKING;

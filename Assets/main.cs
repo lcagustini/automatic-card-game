@@ -69,7 +69,7 @@ public class main : MonoBehaviour
         int handSize = deck.Count > 5 ? 5 : deck.Count;
         for (int i = 0; i < handSize; i++)
         {
-            Transform t = Instantiate(prefab.transform, new Vector3(-4.2F + 2 * i, 28, -47), Quaternion.Euler(17.5F, 180, -1));
+            Transform t = Instantiate(prefab.transform, new Vector3(Camera.main.transform.position.x + -4.02F + 2 * i, 28, Camera.main.transform.position.z + 0.42F), Quaternion.Euler(17.5F, 180, -1));
             card c = t.gameObject.GetComponent<card>();
 
             c.stats = deck.Pop();
