@@ -12,14 +12,12 @@ public enum MonsterState
 
 public class monster : MonoBehaviour
 {
-    const float ATTACK_RANGE = 2.5F;
-    const float MAX_HEALTH = 100F;
     const float DEATH_ANIMATION_DURATION = 3F;
 
     public GameObject prefab;
 
-    public int health = (int) MAX_HEALTH;
-    public int attack = 10;
+    public cardStats stats;
+    public int health;
 
     private MonsterState state = MonsterState.IDLE;
     private GameObject target;
@@ -35,6 +33,8 @@ public class monster : MonoBehaviour
         GameObject screen = GameObject.Find("Canvas");
 
         lifeBar.transform.SetParent(screen.transform);
+
+        health = (int) stats.maxHealth;
     }
 
     // Update is called once per frame
@@ -58,7 +58,7 @@ public class monster : MonoBehaviour
 
             Vector3 pos = new Vector3(-2.5F, 3, 0);
             t.anchoredPosition = Camera.main.WorldToScreenPoint(transform.position + pos);
-            lifeBar.GetComponent<UnityEngine.UI.Slider>().value = health / MAX_HEALTH;
+            lifeBar.GetComponent<UnityEngine.UI.Slider>().value = health / stats.maxHealth;
         }
 
         switch (state)
@@ -87,7 +87,7 @@ public class monster : MonoBehaviour
                     {
                         Vector3 dir = target.transform.position - transform.position;
                         transform.rotation = Quaternion.LookRotation(dir);
-                        if (dir.magnitude > ATTACK_RANGE)
+                        if (dir.magnitude > stats.attackRange)
                         {
                             dir.Normalize();
 
@@ -113,11 +113,11 @@ public class monster : MonoBehaviour
                     {
                         Vector3 dir = target.transform.position - transform.position;
                         transform.rotation = Quaternion.LookRotation(dir);
-                        if (dir.magnitude <= ATTACK_RANGE)
+                        if (dir.magnitude <= stats.attackRange)
                         {
                             if (attackDelay <= 0) {
-                                target.GetComponent<monster>().health -= attack;
-                                attackDelay = 0.5F;
+                                target.GetComponent<monster>().health -= stats.attackDamage;
+                                attackDelay = stats.attackSpeed;
                             }
                         }
                         else
@@ -137,6 +137,7 @@ public class monster : MonoBehaviour
                         Destroy(transform.gameObject);
                     }
                     death_countdown -= Time.deltaTime;
+                    transform.position -= new Vector3(0, Time.deltaTime/5, 0);
 
                     break;
                 }

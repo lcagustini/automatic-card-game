@@ -2459,7 +2459,7 @@ GameObject:
   - component: {fileID: 9175764456396477273}
   - component: {fileID: 2345419441733842236}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Knight
   m_TagString: monster
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class drag : MonoBehaviour
+public class card : MonoBehaviour
 {
     public GameObject prefab;
     private bool dragging = false;
+
+    public cardStats stats;
 
     // Start is called before the first frame update
     void Start()
@@ -29,7 +31,11 @@ public class drag : MonoBehaviour
         {
             if (hit.transform.gameObject.tag != "hand_card")
             {
-                Instantiate(prefab.transform, hit.point, Quaternion.identity);
+                Transform t = Instantiate(prefab.transform, hit.point, Quaternion.identity);
+                monster m = t.gameObject.GetComponent<monster>();
+                m.stats = stats;
+
+                Destroy(transform.gameObject);
             }
         }
     }
