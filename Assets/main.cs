@@ -2,31 +2,34 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct cardStats
+public struct cardData
 {
     public float maxHealth;
 
     public float attackRange;
     public float attackSpeed;
     public int attackDamage;
+
+    public Texture2D texture;
 }
 
 public class main : MonoBehaviour
 {
     public GameObject prefab;
 
-    public Stack<cardStats> deck = new Stack<cardStats>();
+    public Stack<cardData> deck = new Stack<cardData>();
 
     // Start is called before the first frame update
     void Start()
     {
-        deck.Push(new cardStats { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10 });
-        deck.Push(new cardStats { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10 });
-        deck.Push(new cardStats { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10 });
-        deck.Push(new cardStats { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10 });
-        deck.Push(new cardStats { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10 });
-        deck.Push(new cardStats { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10 });
-        deck.Push(new cardStats { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10 });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/00_fool") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/01_magician") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/02_high_priestess") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/03_empress") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/04_emperor") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/05_pope") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/06_lovers") });
+
 
         int handSize = deck.Count > 5 ? 5 : deck.Count;
         for (int i = 0; i < handSize; i++)
@@ -73,17 +76,25 @@ public class main : MonoBehaviour
         }
     }
 
+    private static Random rng = new Random();
+
     void Shuffle()
     {
-        var values = deck.ToArray();
+        var array = deck.ToArray();
         deck.Clear();
 
-        for (int i = 0; i < values.Length; i++)
+        int n = array.Length;
+        for (int i = 0; i < n; i++)
         {
-            var index = Random.Range(0, i);
-            var temp = values[index];
-            values[index] = values[values.Length - 1];
-            deck.Push(temp);
+            int r = i + Random.Range(0, n - i);
+            cardData t = array[r];
+            array[r] = array[i];
+            array[i] = t;
+        }
+
+        foreach (cardData c in array)
+        {
+            deck.Push(c);
         }
     }
 }

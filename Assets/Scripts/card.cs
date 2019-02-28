@@ -7,12 +7,12 @@ public class card : MonoBehaviour
     public GameObject prefab;
     private bool dragging = false;
 
-    public cardStats stats;
+    public cardData stats;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        transform.gameObject.GetComponent<Renderer>().material.SetTexture("_MainTex", stats.texture);
     }
 
     void OnMouseDown()

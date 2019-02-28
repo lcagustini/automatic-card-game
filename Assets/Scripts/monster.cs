@@ -16,7 +16,7 @@ public class monster : MonoBehaviour
 
     public GameObject prefab;
 
-    public cardStats stats;
+    public cardData stats;
     public int health;
 
     private MonsterState state = MonsterState.IDLE;
