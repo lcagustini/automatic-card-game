@@ -42,6 +42,22 @@ public class monster : MonoBehaviour
         lifeBar.transform.SetParent(screen.transform);
 
         health = (int) stats.maxHealth;
+
+        switch (team)
+        {
+            case 0:
+                transform.rotation = Quaternion.Euler(0, 0, 0);
+                break;
+            case 1:
+                transform.rotation = Quaternion.Euler(0, 180, 0);
+                break;
+            case 2:
+                transform.rotation = Quaternion.Euler(0, 270, 0);
+                break;
+            case 3:
+                transform.rotation = Quaternion.Euler(0, 90, 0);
+                break;
+        }
     }
 
     // Update is called once per frame
@@ -63,8 +79,25 @@ public class monster : MonoBehaviour
         {
             RectTransform t = lifeBar.GetComponent<RectTransform>();
 
-            Vector3 pos = new Vector3(-2.5F, 3, 0);
+            Vector3 pos = Vector3.zero;
+            switch (team)
+            {
+                case 0:
+                    pos = new Vector3(-2F, 3, 0);
+                    break;
+                case 1:
+                    pos = new Vector3(2F, 3, 0);
+                    break;
+                case 2:
+                    pos = new Vector3(0, 3, -2F);
+                    break;
+                case 3:
+                    pos = new Vector3(0, 3, 2F);
+                    break;
+            }
+            
             t.anchoredPosition = Camera.main.WorldToScreenPoint(transform.position + pos);
+
             lifeBar.GetComponent<UnityEngine.UI.Slider>().value = health / stats.maxHealth;
             lifeBar.GetComponent<sliderColor>().fill.color = team_colors[team];
         }
