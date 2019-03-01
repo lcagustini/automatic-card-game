@@ -43,7 +43,7 @@ public class main : MonoBehaviour
 
     void OnGUI()
     {
-        if (Event.current.Equals(Event.KeyboardEvent("return")))
+        if (Event.current.Equals(Event.KeyboardEvent("space")))
         {
             NewHand();
         }
