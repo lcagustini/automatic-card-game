@@ -25,10 +25,7 @@ public class move : MonoBehaviour
         GameObject[] handCards = GameObject.FindGameObjectsWithTag("hand_card");
         foreach (GameObject card in handCards)
         {
-            Vector3 cardPosition = card.transform.position;
-            cardPosition.z += verticalOffset;
-            cardPosition.x += horizontalOffset;
-            card.transform.SetPositionAndRotation(cardPosition, card.transform.rotation);
+            card.GetComponent<card>().targetPos += new Vector3(horizontalOffset, 0, verticalOffset);
         }
     }
 }

@@ -10,6 +10,7 @@ public class card : MonoBehaviour
     public GameObject prefab;
 
     public cardData stats;
+    public Vector3 targetPos;
 
     private Rect player1Area = new Rect(-16.7F, -50, 33.4F, 15);
 
@@ -60,10 +61,13 @@ public class card : MonoBehaviour
                         }
                     }
 
-                    Transform t = Instantiate(prefab.transform, hit.point, Quaternion.identity);
+                    Vector3 point = hit.point - new Vector3(0, 2.5F, 0);
+                    Transform t = Instantiate(prefab.transform, point, Quaternion.identity);
                     monster m = t.gameObject.GetComponent<monster>();
                     m.stats = stats;
                     m.team = Random.Range(0,4);
+
+                    Camera.main.GetComponent<main>().hand.Remove(stats);
 
                     casting = true;
                 }
@@ -114,5 +118,7 @@ public class card : MonoBehaviour
             }
             castCounter -= Time.deltaTime;
         }
+
+        transform.position += 7*Time.deltaTime * (targetPos - transform.position);
     }
 }

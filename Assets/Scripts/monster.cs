@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public enum MonsterState
 {
+    RISING,
     IDLE,
     WALKING,
     ATTACKING,
@@ -24,12 +25,13 @@ public class monster : MonoBehaviour
     public int health;
     public int team;
 
-    private MonsterState state = MonsterState.IDLE;
+    private MonsterState state = MonsterState.RISING;
     private GameObject target;
     private GameObject lifeBar;
     private float attackDelay = 0;
     private float death_countdown = DEATH_ANIMATION_DURATION;
 
+    private Rigidbody rb;
     // Start is called before the first frame update
     void Start()
     {
@@ -69,6 +71,20 @@ public class monster : MonoBehaviour
 
         switch (state)
         {
+            case MonsterState.RISING:
+                {
+                    if (transform.position.y < 0.2)
+                    {
+                        transform.position += new Vector3(0, 2.5F * Time.deltaTime, 0);
+                    }
+                    else
+                    {
+                        transform.gameObject.AddComponent<Rigidbody>();
+                        transform.gameObject.GetComponent<Rigidbody>().useGravity = true;
+                        state = MonsterState.IDLE;
+                    }
+                }
+                break;
             case MonsterState.IDLE:
                 GetComponentInChildren<Animator>().Play("Armature|Idle");
 

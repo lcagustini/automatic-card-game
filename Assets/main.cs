@@ -18,6 +18,7 @@ public class main : MonoBehaviour
     public GameObject prefab;
 
     public Stack<cardData> deck = new Stack<cardData>();
+    public List<cardData> hand = new List<cardData>();
 
     // Start is called before the first frame update
     void Start()
@@ -29,15 +30,33 @@ public class main : MonoBehaviour
         deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/04_emperor") });
         deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/05_pope") });
         deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/06_lovers") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/07_chariot") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/08_justice") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/09_hermit") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/10_wheel_of_fortune") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/11_strength") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/12_hanged_man") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/13_death") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/14_temperance") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/15_devil") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/16_tower") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/17_star") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/18_moon") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/19_sun") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/20_judgment") });
+        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/21_world") });
 
 
         int handSize = deck.Count > 5 ? 5 : deck.Count;
         for (int i = 0; i < handSize; i++)
         {
-            Transform t = Instantiate(prefab.transform, new Vector3(-4.2F + 2 * i, 28, -47), Quaternion.Euler(17.5F, 180, -1));
+            Transform t = Instantiate(prefab.transform, new Vector3(Camera.main.transform.position.x + -20.02F, 28, Camera.main.transform.position.z + 0.42F), Quaternion.Euler(17.5F, 180, -1));
             card c = t.gameObject.GetComponent<card>();
 
             c.stats = deck.Pop();
+            c.targetPos = new Vector3(Camera.main.transform.position.x + -4.02F + 2 * i, 28, Camera.main.transform.position.z + 0.42F);
+
+            hand.Add(c.stats);
         }
     }
 
@@ -57,26 +76,31 @@ public class main : MonoBehaviour
 
     void NewHand()
     {
-        GameObject[] hand = GameObject.FindGameObjectsWithTag("hand_card");
+        GameObject[] hand_objects = GameObject.FindGameObjectsWithTag("hand_card");
+        foreach (var obj in hand_objects)
+        {
+            Destroy(obj);
+        }
         foreach (var card in hand)
         {
-            deck.Push(card.GetComponent<card>().stats);
-            Destroy(card);
+            deck.Push(card);
         }
+        hand.Clear();
 
         Shuffle();
 
         int handSize = deck.Count > 5 ? 5 : deck.Count;
         for (int i = 0; i < handSize; i++)
         {
-            Transform t = Instantiate(prefab.transform, new Vector3(Camera.main.transform.position.x + -4.02F + 2 * i, 28, Camera.main.transform.position.z + 0.42F), Quaternion.Euler(17.5F, 180, -1));
+            Transform t = Instantiate(prefab.transform, new Vector3(Camera.main.transform.position.x + -20.02F, 28, Camera.main.transform.position.z + 0.42F), Quaternion.Euler(17.5F, 180, -1));
             card c = t.gameObject.GetComponent<card>();
 
             c.stats = deck.Pop();
+            c.targetPos = new Vector3(Camera.main.transform.position.x + -4.02F + 2 * i, 28, Camera.main.transform.position.z + 0.42F);
+
+            hand.Add(c.stats);
         }
     }
-
-    private static Random rng = new Random();
 
     void Shuffle()
     {
