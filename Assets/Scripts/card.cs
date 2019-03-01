@@ -118,7 +118,7 @@ public class card : MonoBehaviour
 
         if (casting)
         {
-            if (castCounter < 1.4)
+            if (castCounter < 1.55)
             {
                 transform.gameObject.GetComponent<MeshRenderer>().enabled = false;
             }
