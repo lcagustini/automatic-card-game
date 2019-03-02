@@ -30,9 +30,6 @@ public class card : MonoBehaviour
     void Start()
     {
         transform.gameObject.GetComponent<Renderer>().material.SetTexture("_MainTex", stats.texture);
-
-        GameObject.Find("test").transform.position = new Vector3(playerArea[team].center.x, 0.2F, playerArea[team].center.y);
-        GameObject.Find("test").transform.localScale = new Vector3(playerArea[team].width/10, 1, playerArea[team].height/10);
     }
 
     void OnMouseEnter()

@@ -25,8 +25,6 @@ public class main : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        team = 0;
-
         deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/00_fool") });
         deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/01_magician") });
         deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/02_high_priestess") });
@@ -49,11 +47,18 @@ public class main : MonoBehaviour
         deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/19_sun") });
         deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/20_judgment") });
         deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/21_world") });
+    }
+
+    public void OnClientConnected()
+    {
+        GameObject.Find("test").transform.position = new Vector3(card.playerArea[team].center.x, 0.2F, card.playerArea[team].center.y);
+        GameObject.Find("test").transform.localScale = new Vector3(card.playerArea[team].width / 10, 1, card.playerArea[team].height / 10);
 
         Camera.main.transform.SetPositionAndRotation(GetCameraPosByTeam(), GetCameraRotByTeam());
         NewHand();
     }
 
+    // TODO: fix this making it not possible before client is connected
     void OnGUI()
     {
         if (Event.current.Equals(Event.KeyboardEvent("space")))
@@ -63,6 +68,7 @@ public class main : MonoBehaviour
     }
 
     // Update is called once per frame
+    // TODO: check if we're connected
     void Update()
     {
 
