@@ -69,12 +69,13 @@ public class main : MonoBehaviour
         NewHand();
     }
 
-    public void SpawnMonster(int monsterIndex, Vector3 point)
+    public void SpawnMonster(int monsterIndex, int team, Vector3 point)
     {
+        //monsterPrefab.transform.gameObject.GetComponent<monster>().team = team;
         Transform t = Instantiate(monsterPrefab.transform, point, Quaternion.identity);
         monster m = t.gameObject.GetComponent<monster>();
         m.stats = allCards[monsterIndex];
-        m.team = Camera.main.GetComponent<main>().team;
+        m.team = team;
     }
 
     // TODO: fix this making it not possible before client is connected

@@ -84,15 +84,16 @@ public class testClient : MonoBehaviour
                         }
                     case MessageType.RECV_SPAWN_MONSTER:
                         {
+                            int monsterTeam = stream.ReadInt(ref readerCtx);
                             int monsterIndex = stream.ReadInt(ref readerCtx);
                             Vector3 pos;
                             pos.x = stream.ReadFloat(ref readerCtx);
                             pos.y = stream.ReadFloat(ref readerCtx);
                             pos.z = stream.ReadFloat(ref readerCtx);
 
-                            Debug.Log("Received message from server: RECV_SPAWN_MONSTER " + monsterIndex + " " + pos);
+                            Debug.Log("Received message from server: RECV_SPAWN_MONSTER " + monsterIndex + " " + monsterTeam + " " + pos);
 
-                            Camera.main.GetComponent<main>().SpawnMonster(monsterIndex, pos);
+                            Camera.main.GetComponent<main>().SpawnMonster(monsterIndex, monsterTeam, pos);
                             break;
                         }
                     default:
