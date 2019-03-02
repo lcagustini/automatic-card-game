@@ -9,7 +9,7 @@ public class card : MonoBehaviour
 
     public GameObject prefab;
 
-    public cardData stats;
+    public int stats;
     public Vector3 targetPos;
 
     public static Rect[] playerArea = new Rect[] {
@@ -29,7 +29,7 @@ public class card : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        transform.gameObject.GetComponent<Renderer>().material.SetTexture("_MainTex", stats.texture);
+        transform.gameObject.GetComponent<Renderer>().material.SetTexture("_MainTex", Camera.main.GetComponent<main>().allCards[stats].texture);
     }
 
     void OnMouseEnter()
@@ -56,27 +56,22 @@ public class card : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit) && !casting)
         {
-            if (hit.transform.gameObject.tag != "hand_card")
+            // TODO: do this verification on the server side
+            if (hit.transform.gameObject.tag != "hand_card" && playerArea[team].Contains(new Vector2(hit.point.x, hit.point.z)))
             {
-                if (playerArea[team].Contains(new Vector2(hit.point.x, hit.point.z)))
+                Vector3 point = hit.point - new Vector3(0, 2.5F, 0);
+                GameObject.Find("Client").GetComponent<testClient>().SendSpawnMonster(stats, point);
+
+                Camera.main.GetComponent<main>().hand.Remove(stats);
+
+                casting = true;
+
+                foreach (ParticleSystem par in GetComponentsInChildren<ParticleSystem>())
                 {
-                    foreach (ParticleSystem par in GetComponentsInChildren<ParticleSystem>())
+                    if (par.name == "explode" || par.name == "explode2")
                     {
-                        if (par.name == "explode" || par.name == "explode2")
-                        {
-                            par.Play();
-                        }
+                        par.Play();
                     }
-
-                    Vector3 point = hit.point - new Vector3(0, 2.5F, 0);
-                    Transform t = Instantiate(prefab.transform, point, Quaternion.identity);
-                    monster m = t.gameObject.GetComponent<monster>();
-                    m.stats = stats;
-                    m.team = Camera.main.GetComponent<main>().team;
-
-                    Camera.main.GetComponent<main>().hand.Remove(stats);
-
-                    casting = true;
                 }
             }
         }

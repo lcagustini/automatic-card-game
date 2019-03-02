@@ -5,6 +5,13 @@ using Unity.Networking.Transport;
 
 using UdpCNetworkDriver = Unity.Networking.Transport.BasicNetworkDriver<Unity.Networking.Transport.IPv4UDPSocket>;
 
+public enum MessageType
+{
+    TEAM_ASSIGNMENT = 100,
+    SEND_SPAWN_MONSTER,
+    RECV_SPAWN_MONSTER
+}
+
 public class testClient : MonoBehaviour
 {
     public UdpCNetworkDriver m_Driver;
@@ -24,6 +31,22 @@ public class testClient : MonoBehaviour
     public void OnDestroy()
     {
         m_Driver.Dispose();
+    }
+    
+    // TODO: make it not work when not connected
+    public void SendSpawnMonster(int monsterIndex, Vector3 pos)
+    {
+        // TODO: think if there is something like sizeof(float) for better crossplatformness
+        using (var writer = new DataStreamWriter(20, Allocator.Temp))
+        {
+            writer.Write((int)MessageType.SEND_SPAWN_MONSTER);
+            // TODO: this probably should not use the allCards array, maybe we should create an allMonsters array and cardData should refer to It?
+            writer.Write(monsterIndex);
+            writer.Write(pos.x);
+            writer.Write(pos.y);
+            writer.Write(pos.z);
+            m_Driver.Send(m_Connection, writer);
+        }
     }
 
     void Update()
@@ -49,9 +72,34 @@ public class testClient : MonoBehaviour
             else if (cmd == NetworkEvent.Type.Data)
             {
                 var readerCtx = default(DataStreamReader.Context);
-                Camera.main.GetComponent<main>().team = (int) stream.ReadUInt(ref readerCtx);
-                Debug.Log("I was assigned the team " + Camera.main.GetComponent<main>().team);
-                Camera.main.GetComponent<main>().OnClientConnected();
+                MessageType messageType = (MessageType) stream.ReadInt(ref readerCtx);
+                switch (messageType)
+                {
+                    case MessageType.TEAM_ASSIGNMENT:
+                        {
+                            Camera.main.GetComponent<main>().team = (int)stream.ReadUInt(ref readerCtx);
+                            Debug.Log("I was assigned the team " + Camera.main.GetComponent<main>().team);
+                            Camera.main.GetComponent<main>().OnClientConnected();
+                            break;
+                        }
+                    case MessageType.RECV_SPAWN_MONSTER:
+                        {
+                            int monsterIndex = stream.ReadInt(ref readerCtx);
+                            Vector3 pos;
+                            pos.x = stream.ReadFloat(ref readerCtx);
+                            pos.y = stream.ReadFloat(ref readerCtx);
+                            pos.z = stream.ReadFloat(ref readerCtx);
+
+                            Debug.Log("Received message from server: RECV_SPAWN_MONSTER " + monsterIndex + " " + pos);
+
+                            Camera.main.GetComponent<main>().SpawnMonster(monsterIndex, pos);
+                            break;
+                        }
+                    default:
+                        Debug.Log("Unexpected message received, aborting...");
+                        Debug.Assert(false);
+                        break;
+                }
             }
             else if (cmd == NetworkEvent.Type.Disconnect)
             {

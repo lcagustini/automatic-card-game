@@ -15,38 +15,49 @@ public struct cardData
 
 public class main : MonoBehaviour
 {
-    public GameObject prefab;
+    // TODO: maybe rethink if cards really need all this information
+    public List<cardData> allCards = new List<cardData>();
 
-    public Stack<cardData> deck = new Stack<cardData>();
-    public List<cardData> hand = new List<cardData>();
+    public GameObject cardPrefab;
+    public GameObject monsterPrefab;
+
+    public Stack<int> deck = new Stack<int>();
+    public List<int> hand = new List<int>();
 
     public int team;
 
     // Start is called before the first frame update
     void Start()
     {
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/00_fool") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/01_magician") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/02_high_priestess") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/03_empress") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/04_emperor") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/05_pope") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/06_lovers") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/07_chariot") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/08_justice") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/09_hermit") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/10_wheel_of_fortune") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/11_strength") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/12_hanged_man") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/13_death") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/14_temperance") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/15_devil") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/16_tower") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/17_star") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/18_moon") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/19_sun") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/20_judgment") });
-        deck.Push(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/21_world") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/00_fool") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/01_magician") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/02_high_priestess") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/03_empress") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/04_emperor") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/05_pope") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/06_lovers") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/07_chariot") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/08_justice") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/09_hermit") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/10_wheel_of_fortune") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/11_strength") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/12_hanged_man") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/13_death") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/14_temperance") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/15_devil") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/16_tower") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/17_star") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/18_moon") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/19_sun") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/20_judgment") });
+        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/21_world") });
+
+        // TODO: rethink if this is the best we can do
+        // TODO: verify that this passes by copy and not by reference
+        for (int i = 0; i < allCards.Count; i++)
+        {
+            deck.Push(i);
+        }
     }
 
     public void OnClientConnected()
@@ -56,6 +67,14 @@ public class main : MonoBehaviour
 
         Camera.main.transform.SetPositionAndRotation(GetCameraPosByTeam(), GetCameraRotByTeam());
         NewHand();
+    }
+
+    public void SpawnMonster(int monsterIndex, Vector3 point)
+    {
+        Transform t = Instantiate(monsterPrefab.transform, point, Quaternion.identity);
+        monster m = t.gameObject.GetComponent<monster>();
+        m.stats = allCards[monsterIndex];
+        m.team = Camera.main.GetComponent<main>().team;
     }
 
     // TODO: fix this making it not possible before client is connected
@@ -92,7 +111,7 @@ public class main : MonoBehaviour
         int handSize = deck.Count > 5 ? 5 : deck.Count;
         for (int i = 0; i < handSize; i++)
         {
-            Transform t = Instantiate(prefab.transform, GetCardPosByTeam(), GetCardRotationByTeam());
+            Transform t = Instantiate(cardPrefab.transform, GetCardPosByTeam(), GetCardRotationByTeam());
             card c = t.gameObject.GetComponent<card>();
 
             c.stats = deck.Pop();
@@ -112,12 +131,12 @@ public class main : MonoBehaviour
         for (int i = 0; i < n; i++)
         {
             int r = i + Random.Range(0, n - i);
-            cardData t = array[r];
+            int t = array[r];
             array[r] = array[i];
             array[i] = t;
         }
 
-        foreach (cardData c in array)
+        foreach (int c in array)
         {
             deck.Push(c);
         }
