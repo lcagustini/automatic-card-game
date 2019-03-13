@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.44956207, g: 0.49963826, b: 0.57566845, a: 1}
+  m_IndirectSpecularColor: {r: 0.44956183, g: 0.49963784, b: 0.57566786, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -112,6 +112,49 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &24925570
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 24925572}
+  - component: {fileID: 24925571}
+  m_Layer: 0
+  m_Name: server
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &24925571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 24925570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c8b55c88c4e1d441b07af691000bf88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &24925572
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 24925570}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 36.928627, y: 2.655182, z: 2.0175169}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &40760438
 GameObject:
   m_ObjectHideFlags: 0
@@ -320,7 +363,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaeea178db59d0944b8f193eda1ebf7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefab: {fileID: 5013775809676305627, guid: 50b2908252dd8a34f93f6756eec18792, type: 3}
+  cardPrefab: {fileID: 5013775809676305627, guid: 50b2908252dd8a34f93f6756eec18792,
+    type: 3}
+  monsterPrefab: {fileID: 8908381203982249484, guid: 19f8f033ec2e1884fa8f747b0f1bc57a,
+    type: 3}
+  hand: 
   team: 0
 --- !u!114 &534669907
 MonoBehaviour:

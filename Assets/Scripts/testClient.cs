@@ -5,18 +5,13 @@ using Unity.Networking.Transport;
 
 using UdpCNetworkDriver = Unity.Networking.Transport.BasicNetworkDriver<Unity.Networking.Transport.IPv4UDPSocket>;
 
-public enum MessageType
-{
-    TEAM_ASSIGNMENT = 100,
-    SEND_SPAWN_MONSTER,
-    RECV_SPAWN_MONSTER
-}
-
 public class testClient : MonoBehaviour
 {
     public UdpCNetworkDriver m_Driver;
     public NetworkConnection m_Connection;
 
+#if UNITY_SERVER
+#else
     void Start()
     {
         Debug.Log("Starting client...");
@@ -109,4 +104,5 @@ public class testClient : MonoBehaviour
             }
         }
     }
+#endif
 }

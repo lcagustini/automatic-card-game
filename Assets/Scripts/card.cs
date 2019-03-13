@@ -60,8 +60,10 @@ public class card : MonoBehaviour
             if (hit.transform.gameObject.tag != "hand_card" && playerArea[team].Contains(new Vector2(hit.point.x, hit.point.z)))
             {
                 Vector3 point = hit.point - new Vector3(0, 2.5F, 0);
+#if UNITY_SERVER
+#else
                 GameObject.Find("Client").GetComponent<testClient>().SendSpawnMonster(stats, point);
-
+#endif
                 Camera.main.GetComponent<main>().hand.Remove(stats);
 
                 casting = true;
