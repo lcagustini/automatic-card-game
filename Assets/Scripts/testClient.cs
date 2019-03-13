@@ -34,7 +34,7 @@ public class testClient : MonoBehaviour
         // TODO: think if there is something like sizeof(float) for better crossplatformness
         using (var writer = new DataStreamWriter(20, Allocator.Temp))
         {
-            writer.Write((int)MessageType.SEND_SPAWN_MONSTER);
+            writer.Write((int)MessageType.REQUEST_SPAWN_MONSTER);
             // TODO: this probably should not use the allCards array, maybe we should create an allMonsters array and cardData should refer to It?
             writer.Write(monsterIndex);
             writer.Write(pos.x);
@@ -77,8 +77,9 @@ public class testClient : MonoBehaviour
                             Camera.main.GetComponent<main>().OnClientConnected();
                             break;
                         }
-                    case MessageType.RECV_SPAWN_MONSTER:
+                    case MessageType.SPAWN_MONSTER:
                         {
+                            int monsterID = stream.ReadInt(ref readerCtx);
                             int monsterTeam = stream.ReadInt(ref readerCtx);
                             int monsterIndex = stream.ReadInt(ref readerCtx);
                             Vector3 pos;
@@ -86,9 +87,43 @@ public class testClient : MonoBehaviour
                             pos.y = stream.ReadFloat(ref readerCtx);
                             pos.z = stream.ReadFloat(ref readerCtx);
 
-                            Debug.Log("Received message from server: RECV_SPAWN_MONSTER " + monsterIndex + " " + monsterTeam + " " + pos);
+                            monster m = Camera.main.GetComponent<main>().SpawnMonster(monsterIndex, monsterTeam, pos);
+                            m.id = monsterID;
 
-                            Camera.main.GetComponent<main>().SpawnMonster(monsterIndex, monsterTeam, pos);
+                            Debug.Log("Received message from server: SPAWN_MONSTER " + monsterIndex + " " + monsterTeam + " " + pos + "id: " + monsterID);
+
+                            break;
+                        }
+                    case MessageType.UPDATE_MONSTER:
+                        {
+                            GameObject[] monsters = GameObject.FindGameObjectsWithTag("monster");
+
+                            int lenght = stream.ReadInt(ref readerCtx);
+                            for (int i = 0; i < lenght; i++)
+                            {
+                                int id = stream.ReadInt(ref readerCtx);
+                                float pos_x = stream.ReadFloat(ref readerCtx);
+                                float pos_y = stream.ReadFloat(ref readerCtx);
+                                float pos_z = stream.ReadFloat(ref readerCtx);
+                                MonsterState state = (MonsterState) stream.ReadInt(ref readerCtx);
+                                int health = stream.ReadInt(ref readerCtx);
+                                float death = stream.ReadFloat(ref readerCtx);
+
+                                Debug.Log("id: "+id+" pos:"+pos_x+"/"+pos_y+"/"+pos_z+" state:"+state+" health:"+health+" death:"+death);
+
+                                foreach (GameObject m_obj in monsters)
+                                {
+                                    monster m = m_obj.GetComponent<monster>();
+                                    if (m.id == id)
+                                    {
+                                        m.transform.position = new Vector3(pos_x, pos_y, pos_z);
+                                        m.state = state;
+                                        m.health = health;
+                                        m.death_countdown = death;
+                                        break;
+                                    }
+                                }
+                            }
                             break;
                         }
                     default:
