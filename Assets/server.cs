@@ -114,9 +114,7 @@ public class server : MonoBehaviour
                                     pos.z = stream.ReadFloat(ref readerCtx);
 
                                     monster m = Camera.main.GetComponent<main>().SpawnMonster(monsterIndex, players[i].team, pos);
-                                    m.id = monster.monsterCount;
-                                    monster.monsterCount++;
-
+                                    
                                     Debug.Log("Received message from " + i + ": SEND_SPAWN_MONSTER " + monsterIndex + " " + pos);
 
                                     for (int j = 0; j < m_Connections.Length; j++)

@@ -76,7 +76,10 @@ public class main : MonoBehaviour
         monster m = t.gameObject.GetComponent<monster>();
         m.stats = allCards[monsterIndex];
         m.team = team;
-
+#if UNITY_SERVER
+        m.id = monster.monsterCount;
+        monster.monsterCount++;
+#endif
         return m;
     }
 
