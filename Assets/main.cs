@@ -2,7 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum cardType
+{
+    MONSTER,
+    MAGIC
+}
+
 public struct cardData
+{
+    public Texture2D texture;
+
+    public cardType type;
+    public int cost;
+
+    public int monsterID; //NOTE: only used on monster type cards
+}
+
+public struct monsterData
 {
     public float maxHealth;
 
@@ -10,77 +26,69 @@ public struct cardData
     public float attackSpeed;
     public int attackDamage;
 
-    public Texture2D texture;
+    public GameObject prefab;
 }
 
 public class main : MonoBehaviour
 {
-    // TODO: maybe rethink if cards really need all this information
-    public List<cardData> allCards = new List<cardData>();
+    public static List<cardData> allCards = new List<cardData>();
+    public static List<monsterData> allMonster = new List<monsterData>();
 
-    public GameObject cardPrefab;
-    public GameObject monsterPrefab;
-
+#if UNITY_SERVER
     public Stack<int> deck = new Stack<int>();
-    public List<int> hand = new List<int>();
-
+    public List<int>[] hands = { new List<int>(), new List<int>(), new List<int>(), new List<int>() };
+#else
     public int team;
+    public GameObject cardPrefab;
+#endif
 
     // Start is called before the first frame update
     void Start()
     {
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/00_fool") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/01_magician") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/02_high_priestess") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/03_empress") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/04_emperor") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/05_pope") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/06_lovers") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/07_chariot") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/08_justice") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/09_hermit") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/10_wheel_of_fortune") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/11_strength") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/12_hanged_man") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/13_death") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/14_temperance") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/15_devil") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/16_tower") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/17_star") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/18_moon") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/19_sun") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/20_judgment") });
-        allCards.Add(new cardData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, texture = (Texture2D)Resources.Load("Cards/21_world") });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/00_fool"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/01_magician"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/02_high_priestess"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/03_empress"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/04_emperor"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/05_pope"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/06_lovers"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/07_chariot"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/08_justice"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/09_hermit"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/10_wheel_of_fortune"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/11_strength"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/12_hanged_man"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/13_death"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/14_temperance"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/15_devil"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/16_tower"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/17_star"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/18_moon"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/19_sun"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/20_judgment"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
+        allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/21_world"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
 
+        allMonster.Add(new monsterData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, prefab = (GameObject)Resources.Load("Prefabs/Knight") });
+
+#if UNITY_SERVER
         // TODO: rethink if this is the best we can do
         // TODO: verify that this passes by copy and not by reference
         for (int i = 0; i < allCards.Count; i++)
         {
             deck.Push(i);
         }
+#endif
     }
 
+
+#if !UNITY_SERVER
     public void OnClientConnected()
     {
         GameObject.Find("test").transform.position = new Vector3(card.playerArea[team].center.x, 0.2F, card.playerArea[team].center.y);
         GameObject.Find("test").transform.localScale = new Vector3(card.playerArea[team].width / 10, 1, card.playerArea[team].height / 10);
 
         Camera.main.transform.SetPositionAndRotation(GetCameraPosByTeam(), GetCameraRotByTeam());
-        NewHand();
-    }
-
-    public monster SpawnMonster(int monsterIndex, int team, Vector3 point)
-    {
-        //monsterPrefab.transform.gameObject.GetComponent<monster>().team = team;
-        Transform t = Instantiate(monsterPrefab.transform, point, Quaternion.identity);
-        monster m = t.gameObject.GetComponent<monster>();
-        m.stats = allCards[monsterIndex];
-        m.team = team;
-#if UNITY_SERVER
-        m.id = monster.monsterCount;
-        monster.monsterCount++;
-#endif
-        return m;
+        GameObject.Find("Client").GetComponent<testClient>().AskNewHand();
     }
 
     // TODO: fix this making it not possible before client is connected
@@ -88,8 +96,22 @@ public class main : MonoBehaviour
     {
         if (Event.current.Equals(Event.KeyboardEvent("space")))
         {
-            NewHand();
+            GameObject.Find("Client").GetComponent<testClient>().AskNewHand();
         }
+    }
+#endif
+
+    public monster SpawnMonster(int monsterIndex, int team, Vector3 point)
+    {
+        Transform t = Instantiate(allMonster[monsterIndex].prefab.transform, point, Quaternion.identity);
+        monster m = t.gameObject.GetComponent<monster>();
+        m.stats = allMonster[monsterIndex];
+        m.team = team;
+#if UNITY_SERVER
+        m.id = monster.monsterCount;
+        monster.monsterCount++;
+#endif
+        return m;
     }
 
     // Update is called once per frame
@@ -99,36 +121,8 @@ public class main : MonoBehaviour
 
     }
 
-    void NewHand()
-    {
-        GameObject[] hand_objects = GameObject.FindGameObjectsWithTag("hand_card");
-        foreach (var obj in hand_objects)
-        {
-            Destroy(obj);
-        }
-        foreach (var card in hand)
-        {
-            deck.Push(card);
-        }
-        hand.Clear();
-
-        Shuffle();
-
-        int handSize = deck.Count > 5 ? 5 : deck.Count;
-        for (int i = 0; i < handSize; i++)
-        {
-            Transform t = Instantiate(cardPrefab.transform, GetCardPosByTeam(), GetCardRotationByTeam());
-            card c = t.gameObject.GetComponent<card>();
-
-            c.stats = deck.Pop();
-            c.targetPos = GetCardTargetByTeam(i);
-            c.team = team;
-
-            hand.Add(c.stats);
-        }
-    }
-
-    void Shuffle()
+#if UNITY_SERVER
+    public void Shuffle()
     {
         var array = deck.ToArray();
         deck.Clear();
@@ -147,8 +141,10 @@ public class main : MonoBehaviour
             deck.Push(c);
         }
     }
+#endif
 
-    Quaternion GetCardRotationByTeam()
+#if !UNITY_SERVER
+    public Quaternion GetCardRotationByTeam()
     {
         switch (team)
         {
@@ -202,7 +198,7 @@ public class main : MonoBehaviour
         }
     }
 
-    Vector3 GetCardTargetByTeam(int i)
+    public Vector3 GetCardTargetByTeam(int i)
     {
         switch (team)
         {
@@ -229,7 +225,7 @@ public class main : MonoBehaviour
         }
     }
 
-    Vector3 GetCameraPosByTeam()
+    public Vector3 GetCameraPosByTeam()
     {
         switch (Camera.main.GetComponent<main>().team)
         {
@@ -256,7 +252,7 @@ public class main : MonoBehaviour
         }
     }
 
-    Quaternion GetCameraRotByTeam()
+    public Quaternion GetCameraRotByTeam()
     {
         switch (Camera.main.GetComponent<main>().team)
         {
@@ -282,4 +278,5 @@ public class main : MonoBehaviour
                 }
         }
     }
+#endif
 }

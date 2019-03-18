@@ -13,7 +13,10 @@ public enum MessageType
     TEAM_ASSIGNMENT = 100,
     REQUEST_SPAWN_MONSTER,
     SPAWN_MONSTER,
-    UPDATE_MONSTER
+    UPDATE_MONSTER,
+    PING,
+    REQUEST_NEW_HAND,
+    NEW_HAND
 }
 
 public class PlayerInfo
@@ -107,6 +110,9 @@ public class server : MonoBehaviour
                         {
                             case MessageType.REQUEST_SPAWN_MONSTER:
                                 {
+                                    int cardid = stream.ReadInt(ref readerCtx);
+                                    Camera.main.GetComponent<main>().hands[players[i].team].Remove(cardid);
+
                                     int monsterIndex = stream.ReadInt(ref readerCtx);
                                     Vector3 pos;
                                     pos.x = stream.ReadFloat(ref readerCtx);
@@ -114,7 +120,7 @@ public class server : MonoBehaviour
                                     pos.z = stream.ReadFloat(ref readerCtx);
 
                                     monster m = Camera.main.GetComponent<main>().SpawnMonster(monsterIndex, players[i].team, pos);
-                                    
+
                                     Debug.Log("Received message from " + i + ": SEND_SPAWN_MONSTER " + monsterIndex + " " + pos);
 
                                     for (int j = 0; j < m_Connections.Length; j++)
@@ -132,6 +138,44 @@ public class server : MonoBehaviour
                                             m_Driver.Send(m_Connections[j], writer);
                                         }
                                     }
+                                    break;
+                                }
+                            case MessageType.REQUEST_NEW_HAND:
+                                {
+                                    Debug.Log("Received message from "+i+": REQUEST_NEW_HAND");
+
+                                    main m = Camera.main.GetComponent<main>();
+
+                                    foreach (var card in m.hands[players[i].team])
+                                    {
+                                        m.deck.Push(card);
+                                    }
+                                    m.hands[players[i].team].Clear();
+
+                                    m.Shuffle();
+
+                                    int handSize = m.deck.Count > 5 ? 5 : m.deck.Count;
+                                    for (int j = 0; j < handSize; j++)
+                                    {
+                                        m.hands[players[i].team].Add(m.deck.Pop());
+                                    }
+
+                                    using (var writer = new DataStreamWriter((handSize * 4) + 4, Allocator.Temp))
+                                    {
+                                        writer.Write((int)MessageType.NEW_HAND);
+                                        writer.Write(handSize);
+                                        for (int j = 0; j < handSize; j++)
+                                        {
+                                            writer.Write(m.hands[players[i].team][j]);
+                                        }
+                                        m_Driver.Send(m_Connections[i], writer);
+                                    }
+
+                                    break;
+                                }
+                            case MessageType.PING:
+                                {
+                                    Debug.Log("Pong!");
                                     break;
                                 }
                             default:
@@ -167,6 +211,10 @@ public class server : MonoBehaviour
                         writer.Write(m.transform.position.x);
                         writer.Write(m.transform.position.y);
                         writer.Write(m.transform.position.z);
+                        writer.Write(m.transform.rotation.x);
+                        writer.Write(m.transform.rotation.y);
+                        writer.Write(m.transform.rotation.z);
+                        writer.Write(m.transform.rotation.w);
                         writer.Write((int)m.state);
                         writer.Write(m.health);
                         writer.Write(m.death_countdown);

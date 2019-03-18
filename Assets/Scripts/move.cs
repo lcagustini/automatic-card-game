@@ -10,6 +10,7 @@ public class move : MonoBehaviour
 
     }
 
+#if !UNITY_SERVER
     // Update is called once per frame
     void Update()
     {
@@ -80,4 +81,5 @@ public class move : MonoBehaviour
         
         transform.SetPositionAndRotation(newPosition, transform.rotation);
     }
+#endif
 }

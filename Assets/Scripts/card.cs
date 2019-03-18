@@ -9,7 +9,7 @@ public class card : MonoBehaviour
 
     public GameObject prefab;
 
-    public int stats;
+    public int id;
     public Vector3 targetPos;
 
     public static Rect[] playerArea = new Rect[] {
@@ -29,7 +29,7 @@ public class card : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        transform.gameObject.GetComponent<Renderer>().material.SetTexture("_MainTex", Camera.main.GetComponent<main>().allCards[stats].texture);
+        transform.gameObject.GetComponent<Renderer>().material.SetTexture("_MainTex", main.allCards[id].texture);
     }
 
     void OnMouseEnter()
@@ -60,11 +60,16 @@ public class card : MonoBehaviour
             if (hit.transform.gameObject.tag != "hand_card" && playerArea[team].Contains(new Vector2(hit.point.x, hit.point.z)))
             {
                 Vector3 point = hit.point - new Vector3(0, 2.5F, 0);
-#if UNITY_SERVER
-#else
-                GameObject.Find("Client").GetComponent<testClient>().SendSpawnMonster(stats, point);
+#if !UNITY_SERVER
+                if (main.allCards[id].type == cardType.MONSTER)
+                {
+                    GameObject.Find("Client").GetComponent<testClient>().SendSpawnMonster(id, main.allCards[id].monsterID, point);
+                }
+                else
+                {
+                    //TODO: Non monster cards
+                }
 #endif
-                Camera.main.GetComponent<main>().hand.Remove(stats);
 
                 casting = true;
 
@@ -92,6 +97,7 @@ public class card : MonoBehaviour
         }
     }
 
+#if !UNITY_SERVER
     // Update is called once per frame
     void Update()
     {
@@ -138,4 +144,5 @@ public class card : MonoBehaviour
             transform.position = new Vector3(x.x, transform.position.y, transform.position.z);
         }
     }
+#endif
 }

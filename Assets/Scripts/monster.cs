@@ -16,7 +16,7 @@ public class monster : MonoBehaviour
 {
     const float DEATH_ANIMATION_DURATION = 3F;
     public GameObject prefab;
-    public cardData stats;
+    public monsterData stats;
 
     public int id;
     public int health;
@@ -33,6 +33,22 @@ public class monster : MonoBehaviour
     void Start()
     {
         health = (int)stats.maxHealth;
+
+        switch (team)
+        {
+            case 0:
+                transform.rotation = Quaternion.Euler(0, 0, 0);
+                break;
+            case 1:
+                transform.rotation = Quaternion.Euler(0, 180, 0);
+                break;
+            case 2:
+                transform.rotation = Quaternion.Euler(0, 270, 0);
+                break;
+            case 3:
+                transform.rotation = Quaternion.Euler(0, 90, 0);
+                break;
+        }
     }
 
     void Update()
@@ -131,7 +147,8 @@ public class monster : MonoBehaviour
                 }
             case MonsterState.DYING:
                 {
-                    if (death_countdown < 0)
+                    //TODO: Better handling of monster death to avoid client from not destroying entity
+                    if (death_countdown < -0.8)
                     {
                         Destroy(transform.gameObject);
                     }
@@ -156,22 +173,6 @@ public class monster : MonoBehaviour
         GameObject screen = GameObject.Find("Canvas");
 
         lifeBar.transform.SetParent(screen.transform);
-
-        switch (team)
-        {
-            case 0:
-                transform.rotation = Quaternion.Euler(0, 0, 0);
-                break;
-            case 1:
-                transform.rotation = Quaternion.Euler(0, 180, 0);
-                break;
-            case 2:
-                transform.rotation = Quaternion.Euler(0, 270, 0);
-                break;
-            case 3:
-                transform.rotation = Quaternion.Euler(0, 90, 0);
-                break;
-        }
     }
 
     // Update is called once per frame

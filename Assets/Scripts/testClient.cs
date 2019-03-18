@@ -10,8 +10,9 @@ public class testClient : MonoBehaviour
     public UdpCNetworkDriver m_Driver;
     public NetworkConnection m_Connection;
 
-#if UNITY_SERVER
-#else
+#if !UNITY_SERVER
+    private float timeout = 0;
+
     void Start()
     {
         Debug.Log("Starting client...");
@@ -29,17 +30,27 @@ public class testClient : MonoBehaviour
     }
     
     // TODO: make it not work when not connected
-    public void SendSpawnMonster(int monsterIndex, Vector3 pos)
+    public void SendSpawnMonster(int cardid, int monsterIndex, Vector3 pos)
     {
         // TODO: think if there is something like sizeof(float) for better crossplatformness
-        using (var writer = new DataStreamWriter(20, Allocator.Temp))
+        using (var writer = new DataStreamWriter(24, Allocator.Temp))
         {
             writer.Write((int)MessageType.REQUEST_SPAWN_MONSTER);
-            // TODO: this probably should not use the allCards array, maybe we should create an allMonsters array and cardData should refer to It?
+            writer.Write(cardid);
             writer.Write(monsterIndex);
             writer.Write(pos.x);
             writer.Write(pos.y);
             writer.Write(pos.z);
+            m_Driver.Send(m_Connection, writer);
+        }
+    }
+
+    public void AskNewHand()
+    {
+        // TODO: think if there is something like sizeof(float) for better crossplatformness
+        using (var writer = new DataStreamWriter(4, Allocator.Temp))
+        {
+            writer.Write((int)MessageType.REQUEST_NEW_HAND);
             m_Driver.Send(m_Connection, writer);
         }
     }
@@ -56,6 +67,18 @@ public class testClient : MonoBehaviour
 
         DataStreamReader stream;
         NetworkEvent.Type cmd;
+
+        timeout += Time.deltaTime;
+        if (timeout >= 25)
+        {
+            timeout = 0;
+            using (var writer = new DataStreamWriter(4, Allocator.Temp))
+            {
+                Debug.Log("Pinging...");
+                writer.Write((int)MessageType.PING);
+                m_Driver.Send(m_Connection, writer);
+            }
+        } 
 
         while ((cmd = m_Connection.PopEvent(m_Driver, out stream)) !=
                NetworkEvent.Type.Empty)
@@ -105,11 +128,15 @@ public class testClient : MonoBehaviour
                                 float pos_x = stream.ReadFloat(ref readerCtx);
                                 float pos_y = stream.ReadFloat(ref readerCtx);
                                 float pos_z = stream.ReadFloat(ref readerCtx);
+                                float rot_x = stream.ReadFloat(ref readerCtx);
+                                float rot_y = stream.ReadFloat(ref readerCtx);
+                                float rot_z = stream.ReadFloat(ref readerCtx);
+                                float rot_w = stream.ReadFloat(ref readerCtx);
                                 MonsterState state = (MonsterState) stream.ReadInt(ref readerCtx);
                                 int health = stream.ReadInt(ref readerCtx);
                                 float death = stream.ReadFloat(ref readerCtx);
 
-                                Debug.Log("id: "+id+" pos:"+pos_x+"/"+pos_y+"/"+pos_z+" state:"+state+" health:"+health+" death:"+death);
+                                //Debug.Log("id: "+id+" pos:"+pos_x+"/"+pos_y+"/"+pos_z+" state:"+state+" health:"+health+" death:"+death);
 
                                 foreach (GameObject m_obj in monsters)
                                 {
@@ -117,6 +144,7 @@ public class testClient : MonoBehaviour
                                     if (m.id == id)
                                     {
                                         m.transform.position = new Vector3(pos_x, pos_y, pos_z);
+                                        m.transform.rotation = new Quaternion(rot_x, rot_y, rot_z, rot_w);
                                         m.state = state;
                                         m.health = health;
                                         m.death_countdown = death;
@@ -124,6 +152,29 @@ public class testClient : MonoBehaviour
                                     }
                                 }
                             }
+                            break;
+                        }
+                    case MessageType.NEW_HAND:
+                        {
+                            int handSize = stream.ReadInt(ref readerCtx);
+                            main m = Camera.main.GetComponent<main>();
+
+                            GameObject[] hand_objects = GameObject.FindGameObjectsWithTag("hand_card");
+                            foreach (var obj in hand_objects)
+                            {
+                                Destroy(obj);
+                            }
+
+                            for (int i = 0; i < handSize; i++)
+                            {
+                                Transform t = Instantiate(m.cardPrefab.transform, m.GetCardPosByTeam(), m.GetCardRotationByTeam());
+                                card c = t.gameObject.GetComponent<card>();
+
+                                c.id = stream.ReadInt(ref readerCtx);
+                                c.targetPos = m.GetCardTargetByTeam(i);
+                                c.team = m.team;
+                            }
+
                             break;
                         }
                     default:
