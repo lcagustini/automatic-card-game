@@ -16,12 +16,14 @@ public enum MessageType
     UPDATE_MONSTER,
     PING,
     REQUEST_NEW_HAND,
-    NEW_HAND
+    NEW_HAND,
+    UPDATE_MONEY
 }
 
 public class PlayerInfo
 {
     public int team;
+    public int money;
 }
 
 public class server : MonoBehaviour
@@ -80,6 +82,7 @@ public class server : MonoBehaviour
                 players.Add(new PlayerInfo());
                 Debug.Log("Accepted a connection.");
 
+                players[players.Count - 1].money = 5;
                 players[players.Count - 1].team = nextTeamId;
                 Debug.Log("Assigned team " + nextTeamId + " to it.");
 
@@ -88,8 +91,15 @@ public class server : MonoBehaviour
                     writer.Write((int)MessageType.TEAM_ASSIGNMENT);
                     writer.Write(nextTeamId);
                     m_Driver.Send(c, writer);
-                    nextTeamId++;
                 }
+
+                using (var writer = new DataStreamWriter(8, Allocator.Temp))
+                {
+                    writer.Write((int)MessageType.UPDATE_MONEY);
+                    writer.Write(players[players.Count - 1].money);
+                    m_Driver.Send(c, writer);
+                }
+                nextTeamId++;
             }
 
             DataStreamReader stream;
@@ -119,25 +129,37 @@ public class server : MonoBehaviour
                                     pos.y = stream.ReadFloat(ref readerCtx);
                                     pos.z = stream.ReadFloat(ref readerCtx);
 
-                                    monster m = Camera.main.GetComponent<main>().SpawnMonster(monsterIndex, players[i].team, pos);
-
-                                    Debug.Log("Received message from " + i + ": SEND_SPAWN_MONSTER " + monsterIndex + " " + pos);
-
-                                    for (int j = 0; j < m_Connections.Length; j++)
+                                    if (card.playerArea[players[i].team].Contains(new Vector2(pos.x, pos.z)) && players[i].money >= main.allCards[cardid].cost)
                                     {
-                                        // TODO: think if there is something like sizeof(float) for better crossplatformness
-                                        using (var writer = new DataStreamWriter(28, Allocator.Temp))
+                                        monster m = Camera.main.GetComponent<main>().SpawnMonster(monsterIndex, players[i].team, pos);
+                                        players[i].money -= main.allCards[cardid].cost;
+
+                                        Debug.Log("Received message from " + i + ": SEND_SPAWN_MONSTER " + monsterIndex + " " + pos);
+
+                                        for (int j = 0; j < m_Connections.Length; j++)
                                         {
-                                            writer.Write((int)MessageType.SPAWN_MONSTER);
-                                            writer.Write(m.id);
-                                            writer.Write(players[i].team);
-                                            writer.Write(monsterIndex);
-                                            writer.Write(pos.x);
-                                            writer.Write(pos.y);
-                                            writer.Write(pos.z);
-                                            m_Driver.Send(m_Connections[j], writer);
+                                            // TODO: think if there is something like sizeof(float) for better crossplatformness
+                                            using (var writer = new DataStreamWriter(28, Allocator.Temp))
+                                            {
+                                                writer.Write((int)MessageType.SPAWN_MONSTER);
+                                                writer.Write(m.id);
+                                                writer.Write(players[i].team);
+                                                writer.Write(monsterIndex);
+                                                writer.Write(pos.x);
+                                                writer.Write(pos.y);
+                                                writer.Write(pos.z);
+                                                m_Driver.Send(m_Connections[j], writer);
+                                            }
                                         }
                                     }
+
+                                    using (var writer = new DataStreamWriter(8, Allocator.Temp))
+                                    {
+                                        writer.Write((int)MessageType.UPDATE_MONEY);
+                                        writer.Write(players[i].money);
+                                        m_Driver.Send(m_Connections[i], writer);
+                                    }
+
                                     break;
                                 }
                             case MessageType.REQUEST_NEW_HAND:
@@ -175,7 +197,7 @@ public class server : MonoBehaviour
                                 }
                             case MessageType.PING:
                                 {
-                                    Debug.Log("Pong!");
+                                    //Debug.Log("Pong!");
                                     break;
                                 }
                             default:

@@ -187,7 +187,7 @@ public class monster : MonoBehaviour
             RectTransform t = lifeBar.GetComponent<RectTransform>();
 
             Vector3 pos = Vector3.zero;
-            switch (Camera.main.GetComponent<main>().team)
+            switch (Camera.main.GetComponent<main>().info.team)
             {
                 case 0:
                     pos = new Vector3(-2F, 3, 0);

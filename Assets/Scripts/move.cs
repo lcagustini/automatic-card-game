@@ -19,7 +19,7 @@ public class move : MonoBehaviour
 
         Vector3 newPosition = transform.position;
 
-        switch (Camera.main.GetComponent<main>().team)
+        switch (Camera.main.GetComponent<main>().info.team)
         {
             case 0:
                 {

@@ -18,6 +18,7 @@ public class card : MonoBehaviour
         new Rect(35, -16.7F, 15, 33.4F),
         new Rect(-50, -16.7F, 15, 33.4F),
     };
+    public static bool requestLock = false;
 
     private bool mouseOver = false;
     private bool dragging = false;
@@ -32,6 +33,7 @@ public class card : MonoBehaviour
         transform.gameObject.GetComponent<Renderer>().material.SetTexture("_MainTex", main.allCards[id].texture);
     }
 
+#if !UNITY_SERVER
     void OnMouseEnter()
     {
         mouseOver = true;
@@ -51,33 +53,33 @@ public class card : MonoBehaviour
             par.Stop();
         }
 
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit) && !casting)
+        if (!requestLock)
         {
-            // TODO: do this verification on the server side
-            if (hit.transform.gameObject.tag != "hand_card" && playerArea[team].Contains(new Vector2(hit.point.x, hit.point.z)))
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit) && !casting)
             {
-                Vector3 point = hit.point - new Vector3(0, 2.5F, 0);
-#if !UNITY_SERVER
-                if (main.allCards[id].type == cardType.MONSTER)
+                if (hit.transform.gameObject.tag != "hand_card" && playerArea[team].Contains(new Vector2(hit.point.x, hit.point.z)) && Camera.main.GetComponent<main>().info.money >= main.allCards[id].cost)
                 {
-                    GameObject.Find("Client").GetComponent<testClient>().SendSpawnMonster(id, main.allCards[id].monsterID, point);
-                }
-                else
-                {
-                    //TODO: Non monster cards
-                }
-#endif
-
-                casting = true;
-
-                foreach (ParticleSystem par in GetComponentsInChildren<ParticleSystem>())
-                {
-                    if (par.name == "explode" || par.name == "explode2")
+                    Vector3 point = hit.point - new Vector3(0, 2.5F, 0);
+                    if (main.allCards[id].type == cardType.MONSTER)
                     {
-                        par.Play();
+                        GameObject.Find("Client").GetComponent<testClient>().SendSpawnMonster(id, main.allCards[id].monsterID, point);
+                    }
+                    else
+                    {
+                        //TODO: Non monster cards
+                    }
+
+                    casting = true;
+
+                    foreach (ParticleSystem par in GetComponentsInChildren<ParticleSystem>())
+                    {
+                        if (par.name == "explode" || par.name == "explode2")
+                        {
+                            par.Play();
+                        }
                     }
                 }
             }
@@ -97,7 +99,6 @@ public class card : MonoBehaviour
         }
     }
 
-#if !UNITY_SERVER
     // Update is called once per frame
     void Update()
     {
@@ -105,14 +106,14 @@ public class card : MonoBehaviour
         {
             if (transform.position.y < MAX_HEIGHT)
             {
-                transform.position += new Vector3(0, 2*Time.deltaTime, 0);
+                transform.position += new Vector3(0, 2 * Time.deltaTime, 0);
             }
         }
         else if (!dragging)
         {
             if (transform.position.y > MIN_HEIGHT)
             {
-                transform.position -= new Vector3(0, 2*Time.deltaTime, 0);
+                transform.position -= new Vector3(0, 2 * Time.deltaTime, 0);
             }
         }
 

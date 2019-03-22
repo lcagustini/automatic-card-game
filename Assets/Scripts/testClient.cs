@@ -32,6 +32,8 @@ public class testClient : MonoBehaviour
     // TODO: make it not work when not connected
     public void SendSpawnMonster(int cardid, int monsterIndex, Vector3 pos)
     {
+        card.requestLock = true;
+
         // TODO: think if there is something like sizeof(float) for better crossplatformness
         using (var writer = new DataStreamWriter(24, Allocator.Temp))
         {
@@ -95,8 +97,8 @@ public class testClient : MonoBehaviour
                 {
                     case MessageType.TEAM_ASSIGNMENT:
                         {
-                            Camera.main.GetComponent<main>().team = (int)stream.ReadUInt(ref readerCtx);
-                            Debug.Log("I was assigned the team " + Camera.main.GetComponent<main>().team);
+                            Camera.main.GetComponent<main>().info.team = (int)stream.ReadUInt(ref readerCtx);
+                            Debug.Log("I was assigned the team " + Camera.main.GetComponent<main>().info.team);
                             Camera.main.GetComponent<main>().OnClientConnected();
                             break;
                         }
@@ -172,8 +174,15 @@ public class testClient : MonoBehaviour
 
                                 c.id = stream.ReadInt(ref readerCtx);
                                 c.targetPos = m.GetCardTargetByTeam(i);
-                                c.team = m.team;
+                                c.team = m.info.team;
                             }
+
+                            break;
+                        }
+                    case MessageType.UPDATE_MONEY:
+                        {
+                            Camera.main.GetComponent<main>().info.money = stream.ReadInt(ref readerCtx);
+                            card.requestLock = false;
 
                             break;
                         }

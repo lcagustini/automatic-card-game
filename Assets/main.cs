@@ -34,11 +34,13 @@ public class main : MonoBehaviour
     public static List<cardData> allCards = new List<cardData>();
     public static List<monsterData> allMonster = new List<monsterData>();
 
+    public UnityEngine.UI.Text moneyUI; //Client only, but unity wants it available on server too;
+
 #if UNITY_SERVER
     public Stack<int> deck = new Stack<int>();
     public List<int>[] hands = { new List<int>(), new List<int>(), new List<int>(), new List<int>() };
 #else
-    public int team;
+    public PlayerInfo info = new PlayerInfo();
     public GameObject cardPrefab;
 #endif
 
@@ -84,8 +86,8 @@ public class main : MonoBehaviour
 #if !UNITY_SERVER
     public void OnClientConnected()
     {
-        GameObject.Find("test").transform.position = new Vector3(card.playerArea[team].center.x, 0.2F, card.playerArea[team].center.y);
-        GameObject.Find("test").transform.localScale = new Vector3(card.playerArea[team].width / 10, 1, card.playerArea[team].height / 10);
+        GameObject.Find("test").transform.position = new Vector3(card.playerArea[info.team].center.x, 0.2F, card.playerArea[info.team].center.y);
+        GameObject.Find("test").transform.localScale = new Vector3(card.playerArea[info.team].width / 10, 1, card.playerArea[info.team].height / 10);
 
         Camera.main.transform.SetPositionAndRotation(GetCameraPosByTeam(), GetCameraRotByTeam());
         GameObject.Find("Client").GetComponent<testClient>().AskNewHand();
@@ -114,12 +116,12 @@ public class main : MonoBehaviour
         return m;
     }
 
-    // Update is called once per frame
-    // TODO: check if we're connected
+#if !UNITY_SERVER
     void Update()
     {
-
+        moneyUI.text = info.money.ToString();
     }
+#endif
 
 #if UNITY_SERVER
     public void Shuffle()
@@ -146,7 +148,7 @@ public class main : MonoBehaviour
 #if !UNITY_SERVER
     public Quaternion GetCardRotationByTeam()
     {
-        switch (team)
+        switch (info.team)
         {
             case 0:
                 {
@@ -173,7 +175,7 @@ public class main : MonoBehaviour
 
     public Vector3 GetCardPosByTeam()
     {
-        switch (team)
+        switch (info.team)
         {
             case 0:
                 {
@@ -200,7 +202,7 @@ public class main : MonoBehaviour
 
     public Vector3 GetCardTargetByTeam(int i)
     {
-        switch (team)
+        switch (info.team)
         {
             case 0:
                 {
@@ -227,7 +229,7 @@ public class main : MonoBehaviour
 
     public Vector3 GetCameraPosByTeam()
     {
-        switch (Camera.main.GetComponent<main>().team)
+        switch (Camera.main.GetComponent<main>().info.team)
         {
             case 0:
                 {
@@ -254,7 +256,7 @@ public class main : MonoBehaviour
 
     public Quaternion GetCameraRotByTeam()
     {
-        switch (Camera.main.GetComponent<main>().team)
+        switch (Camera.main.GetComponent<main>().info.team)
         {
             case 0:
                 {
