@@ -2,6 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum RoundPhase
+{
+    PREPARE,
+    BATTLE
+}
+
 public enum cardType
 {
     MONSTER,
@@ -26,6 +32,8 @@ public struct monsterData
     public float attackSpeed;
     public int attackDamage;
 
+    public float speed;
+
     public GameObject prefab;
 }
 
@@ -35,6 +43,8 @@ public class main : MonoBehaviour
     public static List<monsterData> allMonster = new List<monsterData>();
 
     public UnityEngine.UI.Text moneyUI; //Client only, but unity wants it available on server too;
+    public UnityEngine.UI.Text timeUI;
+    public UnityEngine.UI.Text phaseUI;
 
 #if UNITY_SERVER
     public Stack<int> deck = new Stack<int>();
@@ -42,6 +52,9 @@ public class main : MonoBehaviour
 #else
     public PlayerInfo info = new PlayerInfo();
     public GameObject cardPrefab;
+
+    public static RoundPhase current_phase;
+    public static float phase_timer;
 #endif
 
     // Start is called before the first frame update
@@ -70,7 +83,7 @@ public class main : MonoBehaviour
         allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/20_judgment"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
         allCards.Add(new cardData { texture = (Texture2D)Resources.Load("Cards/21_world"), type = cardType.MONSTER, cost = 2, monsterID = 0 });
 
-        allMonster.Add(new monsterData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, prefab = (GameObject)Resources.Load("Prefabs/Knight") });
+        allMonster.Add(new monsterData { maxHealth = 100F, attackRange = 2.5F, attackSpeed = 0.5F, attackDamage = 10, speed = 5, prefab = (GameObject)Resources.Load("Prefabs/Knight") });
 
 #if UNITY_SERVER
         // TODO: rethink if this is the best we can do
@@ -81,7 +94,6 @@ public class main : MonoBehaviour
         }
 #endif
     }
-
 
 #if !UNITY_SERVER
     public void OnClientConnected()
@@ -96,7 +108,7 @@ public class main : MonoBehaviour
     // TODO: fix this making it not possible before client is connected
     void OnGUI()
     {
-        if (Event.current.Equals(Event.KeyboardEvent("space")))
+        if (Event.current.Equals(Event.KeyboardEvent("space")) && current_phase == RoundPhase.PREPARE)
         {
             GameObject.Find("Client").GetComponent<testClient>().AskNewHand();
         }
@@ -119,6 +131,14 @@ public class main : MonoBehaviour
 #if !UNITY_SERVER
     void Update()
     {
+        phase_timer -= Time.deltaTime;
+
+        if (phase_timer < 0)
+        {
+            phase_timer = 0;
+        }
+        timeUI.text = ((int)phase_timer).ToString();
+
         moneyUI.text = info.money.ToString();
     }
 #endif

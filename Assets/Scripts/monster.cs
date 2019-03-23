@@ -25,6 +25,8 @@ public class monster : MonoBehaviour
     public MonsterState state = MonsterState.RISING;
     public float death_countdown = DEATH_ANIMATION_DURATION;
 
+    public Vector3 startingPos;
+    public Quaternion startingRot;
 #if UNITY_SERVER
     private GameObject target;
     private float attackDelay = 0;
@@ -75,30 +77,38 @@ public class monster : MonoBehaviour
                     }
                     else
                     {
-                        transform.gameObject.AddComponent<Rigidbody>();
+                        if (transform.gameObject.GetComponent<Rigidbody>() == null)
+                        {
+                            transform.gameObject.AddComponent<BoxCollider>();
+                            transform.gameObject.AddComponent<Rigidbody>();
+                        }
                         transform.gameObject.GetComponent<Rigidbody>().useGravity = true;
+                        startingPos = transform.position;
+                        startingRot = transform.rotation;
                         state = MonsterState.IDLE;
                     }
                 }
                 break;
             case MonsterState.IDLE:
-                GameObject[] monsters = GameObject.FindGameObjectsWithTag("monster");
-
-                foreach (GameObject m in monsters)
+                if (server.current_phase == RoundPhase.BATTLE)
                 {
-                    monster m_class = m.GetComponent<monster>();
-                    if (m != transform.gameObject && m_class.state != MonsterState.DYING && m_class.team != team)
+                    GameObject[] monsters = GameObject.FindGameObjectsWithTag("monster");
+
+                    foreach (GameObject m in monsters)
                     {
-                        target = m;
-                        state = MonsterState.WALKING;
-                        break;
+                        monster m_class = m.GetComponent<monster>();
+                        if (m != transform.gameObject && m_class.state != MonsterState.DYING && m_class.team != team)
+                        {
+                            target = m;
+                            state = MonsterState.WALKING;
+                            break;
+                        }
                     }
                 }
-
                 break;
             case MonsterState.WALKING:
                 {
-                    if (target != null && target.GetComponent<monster>().state != MonsterState.DYING)
+                    if (target != null && target.GetComponent<monster>().state != MonsterState.DYING && server.current_phase == RoundPhase.BATTLE)
                     {
                         Vector3 dir = target.transform.position - transform.position;
                         transform.rotation = Quaternion.LookRotation(dir);
@@ -106,7 +116,7 @@ public class monster : MonoBehaviour
                         {
                             dir.Normalize();
 
-                            transform.position += dir * Time.deltaTime;
+                            transform.position += dir * Time.deltaTime * stats.speed;
                         }
                         else
                         {
@@ -122,7 +132,7 @@ public class monster : MonoBehaviour
                 }
             case MonsterState.ATTACKING:
                 {
-                    if (target != null && target.GetComponent<monster>().state != MonsterState.DYING)
+                    if (target != null && target.GetComponent<monster>().state != MonsterState.DYING && server.current_phase == RoundPhase.BATTLE)
                     {
                         Vector3 dir = target.transform.position - transform.position;
                         transform.rotation = Quaternion.LookRotation(dir);
@@ -131,6 +141,16 @@ public class monster : MonoBehaviour
                             if (attackDelay <= 0)
                             {
                                 target.GetComponent<monster>().health -= stats.attackDamage;
+                                if (target.GetComponent<monster>().health <= 0)
+                                {
+                                    foreach (PlayerInfo player in server.players)
+                                    {
+                                        if (player.team == team)
+                                        {
+                                            player.money += 1;
+                                        }
+                                    }
+                                }
                                 attackDelay = stats.attackSpeed;
                             }
                         }
@@ -148,12 +168,11 @@ public class monster : MonoBehaviour
             case MonsterState.DYING:
                 {
                     //TODO: Better handling of monster death to avoid client from not destroying entity
-                    if (death_countdown < -0.8)
+                    if (death_countdown > -0.8)
                     {
-                        Destroy(transform.gameObject);
+                        death_countdown -= Time.deltaTime;
+                        transform.position -= new Vector3(0, Time.deltaTime / 5, 0);
                     }
-                    death_countdown -= Time.deltaTime;
-                    transform.position -= new Vector3(0, Time.deltaTime / 5, 0);
 
                     break;
                 }
@@ -181,9 +200,11 @@ public class monster : MonoBehaviour
         if (health <= 0)
         {
             GetComponentInChildren<Animator>().Play("Armature|Die");
-            Destroy(lifeBar);
+            lifeBar.SetActive(false);
         } else
         {
+            lifeBar.SetActive(true);
+
             RectTransform t = lifeBar.GetComponent<RectTransform>();
 
             Vector3 pos = Vector3.zero;
@@ -223,13 +244,7 @@ public class monster : MonoBehaviour
                 GetComponentInChildren<Animator>().Play("Armature|Attack");
                 break;
             case MonsterState.DYING:
-                {
-                    if (death_countdown < 0) {
-                        Destroy(transform.gameObject);
-                    }
-
-                    break;
-                }
+                break;
         }
     }
 #endif

@@ -130,6 +130,7 @@ public class testClient : MonoBehaviour
                                 float pos_x = stream.ReadFloat(ref readerCtx);
                                 float pos_y = stream.ReadFloat(ref readerCtx);
                                 float pos_z = stream.ReadFloat(ref readerCtx);
+
                                 float rot_x = stream.ReadFloat(ref readerCtx);
                                 float rot_y = stream.ReadFloat(ref readerCtx);
                                 float rot_z = stream.ReadFloat(ref readerCtx);
@@ -183,6 +184,34 @@ public class testClient : MonoBehaviour
                         {
                             Camera.main.GetComponent<main>().info.money = stream.ReadInt(ref readerCtx);
                             card.requestLock = false;
+
+                            break;
+                        }
+                    case MessageType.UPDATE_PHASE:
+                        {
+                            main.current_phase = (RoundPhase)stream.ReadInt(ref readerCtx);
+                            if (main.current_phase == RoundPhase.BATTLE)
+                            {
+                                main.phase_timer = 60F;
+
+                                Camera.main.GetComponent<main>().phaseUI.color = Color.red;
+                                Camera.main.GetComponent<main>().phaseUI.text = "Battle";
+
+                                GameObject[] hand_objects = GameObject.FindGameObjectsWithTag("hand_card");
+                                foreach (var obj in hand_objects)
+                                {
+                                    Destroy(obj);
+                                }
+                            }
+                            else
+                            {
+                                main.phase_timer = 30F;
+
+                                Camera.main.GetComponent<main>().phaseUI.color = Color.green;
+                                Camera.main.GetComponent<main>().phaseUI.text = "Preparing";
+
+                                GameObject.Find("Client").GetComponent<testClient>().AskNewHand();
+                            }
 
                             break;
                         }

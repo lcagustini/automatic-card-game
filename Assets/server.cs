@@ -17,7 +17,8 @@ public enum MessageType
     PING,
     REQUEST_NEW_HAND,
     NEW_HAND,
-    UPDATE_MONEY
+    UPDATE_MONEY,
+    UPDATE_PHASE
 }
 
 public class PlayerInfo
@@ -33,10 +34,13 @@ public class server : MonoBehaviour
 
     // NOTE: currently these two lists must be always in sync
     private NativeList<NetworkConnection> m_Connections;
-    private List<PlayerInfo> players = new List<PlayerInfo>();
+    public static List<PlayerInfo> players = new List<PlayerInfo>();
     private int nextTeamId = 0;
 
     private float update_timer = 0F;
+
+    public static RoundPhase current_phase = RoundPhase.BATTLE;
+    private static float round_timer = 29F;
 
     void Start()
     {
@@ -58,6 +62,64 @@ public class server : MonoBehaviour
     void Update()
     {
         update_timer += Time.deltaTime;
+        round_timer += Time.deltaTime;
+
+        if (current_phase == RoundPhase.PREPARE)
+        {
+            if (round_timer > 30)
+            {
+                round_timer = 0;
+                current_phase = RoundPhase.BATTLE;
+
+                for (int j = 0; j < m_Connections.Length; j++)
+                {
+                    using (var writer = new DataStreamWriter(8, Allocator.Temp))
+                    {
+                        writer.Write((int)MessageType.UPDATE_PHASE);
+                        writer.Write((int)current_phase);
+                        m_Driver.Send(m_Connections[j], writer);
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (round_timer > 60)
+            {
+                round_timer = 0;
+                current_phase = RoundPhase.PREPARE;
+
+                GameObject[] monsters = GameObject.FindGameObjectsWithTag("monster");
+                foreach (var obj in monsters)
+                {
+                    monster m = obj.GetComponent<monster>();
+                    obj.transform.position = m.startingPos;
+                    obj.transform.rotation = m.startingRot;
+                    m.health = (int)m.stats.maxHealth;
+                    m.state = MonsterState.RISING;
+                }
+
+                for (int j = 0; j < m_Connections.Length; j++)
+                {
+                    using (var writer = new DataStreamWriter(8, Allocator.Temp))
+                    {
+                        writer.Write((int)MessageType.UPDATE_MONEY);
+                        writer.Write(players[j].money);
+                        m_Driver.Send(m_Connections[j], writer);
+                    }
+                }
+
+                for (int j = 0; j < m_Connections.Length; j++)
+                {
+                    using (var writer = new DataStreamWriter(8, Allocator.Temp))
+                    {
+                        writer.Write((int)MessageType.UPDATE_PHASE);
+                        writer.Write((int)current_phase);
+                        m_Driver.Send(m_Connections[j], writer);
+                    }
+                }
+            }
+        }
 
         if (update_timer > 0.033F)
         {
@@ -120,79 +182,83 @@ public class server : MonoBehaviour
                         {
                             case MessageType.REQUEST_SPAWN_MONSTER:
                                 {
-                                    int cardid = stream.ReadInt(ref readerCtx);
-                                    Camera.main.GetComponent<main>().hands[players[i].team].Remove(cardid);
-
-                                    int monsterIndex = stream.ReadInt(ref readerCtx);
-                                    Vector3 pos;
-                                    pos.x = stream.ReadFloat(ref readerCtx);
-                                    pos.y = stream.ReadFloat(ref readerCtx);
-                                    pos.z = stream.ReadFloat(ref readerCtx);
-
-                                    if (card.playerArea[players[i].team].Contains(new Vector2(pos.x, pos.z)) && players[i].money >= main.allCards[cardid].cost)
+                                    if (current_phase == RoundPhase.PREPARE)
                                     {
-                                        monster m = Camera.main.GetComponent<main>().SpawnMonster(monsterIndex, players[i].team, pos);
-                                        players[i].money -= main.allCards[cardid].cost;
+                                        int cardid = stream.ReadInt(ref readerCtx);
+                                        Camera.main.GetComponent<main>().hands[players[i].team].Remove(cardid);
 
-                                        Debug.Log("Received message from " + i + ": SEND_SPAWN_MONSTER " + monsterIndex + " " + pos);
+                                        int monsterIndex = stream.ReadInt(ref readerCtx);
+                                        Vector3 pos;
+                                        pos.x = stream.ReadFloat(ref readerCtx);
+                                        pos.y = stream.ReadFloat(ref readerCtx);
+                                        pos.z = stream.ReadFloat(ref readerCtx);
 
-                                        for (int j = 0; j < m_Connections.Length; j++)
+                                        if (card.playerArea[players[i].team].Contains(new Vector2(pos.x, pos.z)) && players[i].money >= main.allCards[cardid].cost)
                                         {
-                                            // TODO: think if there is something like sizeof(float) for better crossplatformness
-                                            using (var writer = new DataStreamWriter(28, Allocator.Temp))
+                                            monster m = Camera.main.GetComponent<main>().SpawnMonster(monsterIndex, players[i].team, pos);
+                                            players[i].money -= main.allCards[cardid].cost;
+
+                                            Debug.Log("Received message from " + i + ": SEND_SPAWN_MONSTER " + monsterIndex + " " + pos);
+
+                                            for (int j = 0; j < m_Connections.Length; j++)
                                             {
-                                                writer.Write((int)MessageType.SPAWN_MONSTER);
-                                                writer.Write(m.id);
-                                                writer.Write(players[i].team);
-                                                writer.Write(monsterIndex);
-                                                writer.Write(pos.x);
-                                                writer.Write(pos.y);
-                                                writer.Write(pos.z);
-                                                m_Driver.Send(m_Connections[j], writer);
+                                                // TODO: think if there is something like sizeof(float) for better crossplatformness
+                                                using (var writer = new DataStreamWriter(28, Allocator.Temp))
+                                                {
+                                                    writer.Write((int)MessageType.SPAWN_MONSTER);
+                                                    writer.Write(m.id);
+                                                    writer.Write(players[i].team);
+                                                    writer.Write(monsterIndex);
+                                                    writer.Write(pos.x);
+                                                    writer.Write(pos.y);
+                                                    writer.Write(pos.z);
+                                                    m_Driver.Send(m_Connections[j], writer);
+                                                }
                                             }
                                         }
-                                    }
 
-                                    using (var writer = new DataStreamWriter(8, Allocator.Temp))
-                                    {
-                                        writer.Write((int)MessageType.UPDATE_MONEY);
-                                        writer.Write(players[i].money);
-                                        m_Driver.Send(m_Connections[i], writer);
+                                        using (var writer = new DataStreamWriter(8, Allocator.Temp))
+                                        {
+                                            writer.Write((int)MessageType.UPDATE_MONEY);
+                                            writer.Write(players[i].money);
+                                            m_Driver.Send(m_Connections[i], writer);
+                                        }
                                     }
-
                                     break;
                                 }
                             case MessageType.REQUEST_NEW_HAND:
                                 {
-                                    Debug.Log("Received message from "+i+": REQUEST_NEW_HAND");
-
-                                    main m = Camera.main.GetComponent<main>();
-
-                                    foreach (var card in m.hands[players[i].team])
+                                    if (current_phase == RoundPhase.PREPARE)
                                     {
-                                        m.deck.Push(card);
-                                    }
-                                    m.hands[players[i].team].Clear();
+                                        Debug.Log("Received message from " + i + ": REQUEST_NEW_HAND");
 
-                                    m.Shuffle();
+                                        main m = Camera.main.GetComponent<main>();
 
-                                    int handSize = m.deck.Count > 5 ? 5 : m.deck.Count;
-                                    for (int j = 0; j < handSize; j++)
-                                    {
-                                        m.hands[players[i].team].Add(m.deck.Pop());
-                                    }
+                                        foreach (var card in m.hands[players[i].team])
+                                        {
+                                            m.deck.Push(card);
+                                        }
+                                        m.hands[players[i].team].Clear();
 
-                                    using (var writer = new DataStreamWriter((handSize * 4) + 4, Allocator.Temp))
-                                    {
-                                        writer.Write((int)MessageType.NEW_HAND);
-                                        writer.Write(handSize);
+                                        m.Shuffle();
+
+                                        int handSize = m.deck.Count > 5 ? 5 : m.deck.Count;
                                         for (int j = 0; j < handSize; j++)
                                         {
-                                            writer.Write(m.hands[players[i].team][j]);
+                                            m.hands[players[i].team].Add(m.deck.Pop());
                                         }
-                                        m_Driver.Send(m_Connections[i], writer);
-                                    }
 
+                                        using (var writer = new DataStreamWriter((handSize * 4) + 4, Allocator.Temp))
+                                        {
+                                            writer.Write((int)MessageType.NEW_HAND);
+                                            writer.Write(handSize);
+                                            for (int j = 0; j < handSize; j++)
+                                            {
+                                                writer.Write(m.hands[players[i].team][j]);
+                                            }
+                                            m_Driver.Send(m_Connections[i], writer);
+                                        }
+                                    }
                                     break;
                                 }
                             case MessageType.PING:
