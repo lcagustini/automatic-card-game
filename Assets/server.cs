@@ -18,13 +18,15 @@ public enum MessageType
     REQUEST_NEW_HAND,
     NEW_HAND,
     UPDATE_MONEY,
-    UPDATE_PHASE
+    UPDATE_PHASE,
+    UPDATE_RANKINGS,
 }
 
 public class PlayerInfo
 {
     public int team;
     public int money;
+    public int wins;
 }
 
 public class server : MonoBehaviour
@@ -37,10 +39,29 @@ public class server : MonoBehaviour
     public static List<PlayerInfo> players = new List<PlayerInfo>();
     private int nextTeamId = 0;
 
+    private int[] rankings = new int[4];
+
     private float update_timer = 0F;
 
     public static RoundPhase current_phase = RoundPhase.BATTLE;
     private static float round_timer = 29F;
+
+    static void Sort(int[] arr, int length)
+    {
+        int repos = 0;
+        for (int i = 0; i < length - 1; i++)
+        {
+            for (int j = 0; j < length - (i + 1); j++)
+            {
+                if (players[arr[j]].wins < players[arr[j + 1]].wins)
+                {
+                    repos = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = repos;
+                }
+            }
+        }
+    }
 
     void Start()
     {
@@ -59,6 +80,7 @@ public class server : MonoBehaviour
         m_Connections.Dispose();
     }
 
+    int winner_team = -1;
     void Update()
     {
         update_timer += Time.deltaTime;
@@ -70,6 +92,7 @@ public class server : MonoBehaviour
             {
                 round_timer = 0;
                 current_phase = RoundPhase.BATTLE;
+                winner_team = -1;
 
                 for (int j = 0; j < m_Connections.Length; j++)
                 {
@@ -84,12 +107,75 @@ public class server : MonoBehaviour
         }
         else
         {
+            GameObject[] monsters = GameObject.FindGameObjectsWithTag("monster");
+            if (winner_team != -3)
+            {
+                foreach (var obj in monsters)
+                {
+                    monster m = obj.GetComponent<monster>();
+                    if (winner_team == -1 && m.state != MonsterState.DYING)
+                    {
+                        winner_team = m.team;
+                    }
+                    else if (winner_team != m.team && m.state != MonsterState.DYING)
+                    {
+                        winner_team = -2;
+                    }
+                    if (winner_team == -2)
+                    {
+                        break;
+                    }
+                }
+                if (winner_team >= 0)
+                {
+                    round_timer = 58;
+
+                    foreach (PlayerInfo p in players)
+                    {
+                        if (p.team == winner_team)
+                        {
+                            p.wins++;
+                            break;
+                        }
+                    }
+
+                    Sort(rankings, players.Count);
+
+                    for (int i = 0; i < m_Connections.Length; i++)
+                    {
+                        using (var writer = new DataStreamWriter(36, Allocator.Temp))
+                        {
+                            writer.Write((int)MessageType.UPDATE_RANKINGS);
+                            writer.Write(players[rankings[0]].team);
+                            writer.Write(players[rankings[0]].wins);
+                            writer.Write(players[rankings[1]].team);
+                            writer.Write(players[rankings[1]].wins);
+                            writer.Write(players[rankings[2]].team);
+                            writer.Write(players[rankings[2]].wins);
+                            writer.Write(players[rankings[3]].team);
+                            writer.Write(players[rankings[3]].wins);
+                            m_Driver.Send(m_Connections[i], writer);
+                        }
+                    }
+
+                    if (players[rankings[0]].wins == 10)
+                    {
+                        // TODO: Game over
+                    }
+
+                    winner_team = -3;
+                }
+                else
+                {
+                    winner_team = -1;
+                }
+            }
+
             if (round_timer > 60)
             {
                 round_timer = 0;
                 current_phase = RoundPhase.PREPARE;
 
-                GameObject[] monsters = GameObject.FindGameObjectsWithTag("monster");
                 foreach (var obj in monsters)
                 {
                     monster m = obj.GetComponent<monster>();
@@ -98,6 +184,10 @@ public class server : MonoBehaviour
                     m.health = (int)m.stats.maxHealth;
                     m.state = MonsterState.RISING;
                 }
+
+                // End of turn bonus to lower ranked players
+                players[rankings[2]].money += 1;
+                players[rankings[3]].money += 2;
 
                 for (int j = 0; j < m_Connections.Length; j++)
                 {
@@ -146,7 +236,10 @@ public class server : MonoBehaviour
 
                 players[players.Count - 1].money = 5;
                 players[players.Count - 1].team = nextTeamId;
+                players[players.Count - 1].wins = 0;
                 Debug.Log("Assigned team " + nextTeamId + " to it.");
+
+                rankings[players.Count - 1] = players.Count - 1;
 
                 using (var writer = new DataStreamWriter(8, Allocator.Temp))
                 {

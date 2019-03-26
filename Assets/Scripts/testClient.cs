@@ -215,6 +215,21 @@ public class testClient : MonoBehaviour
 
                             break;
                         }
+                    case MessageType.UPDATE_RANKINGS:
+                        {
+                            main.enable_ranks = true;
+
+                            main.rankings[0].team = stream.ReadInt(ref readerCtx);
+                            main.rankings[0].wins = stream.ReadInt(ref readerCtx);
+                            main.rankings[1].team = stream.ReadInt(ref readerCtx);
+                            main.rankings[1].wins = stream.ReadInt(ref readerCtx);
+                            main.rankings[2].team = stream.ReadInt(ref readerCtx);
+                            main.rankings[2].wins = stream.ReadInt(ref readerCtx);
+                            main.rankings[3].team = stream.ReadInt(ref readerCtx);
+                            main.rankings[3].wins = stream.ReadInt(ref readerCtx);
+
+                            break;
+                        }
                     default:
                         Debug.Log("Unexpected message received, aborting...");
                         Debug.Assert(false);

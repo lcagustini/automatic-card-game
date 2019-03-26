@@ -63,8 +63,8 @@ public class monster : MonoBehaviour
         if (health <= 0)
         {
             state = MonsterState.DYING;
-            Destroy(GetComponent<Rigidbody>());
-            Destroy(GetComponent<BoxCollider>());
+            Destroy(transform.gameObject.GetComponent<Rigidbody>());
+            Destroy(transform.gameObject.GetComponent<BoxCollider>());
         }
 
         switch (state)
@@ -171,7 +171,7 @@ public class monster : MonoBehaviour
                     if (death_countdown > -0.8)
                     {
                         death_countdown -= Time.deltaTime;
-                        transform.position -= new Vector3(0, Time.deltaTime / 5, 0);
+                        transform.position -= new Vector3(0, Time.deltaTime / 3, 0);
                     }
 
                     break;

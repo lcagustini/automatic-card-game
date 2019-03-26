@@ -46,6 +46,9 @@ public class main : MonoBehaviour
     public UnityEngine.UI.Text timeUI;
     public UnityEngine.UI.Text phaseUI;
 
+    public static bool enable_ranks = false;
+    public UnityEngine.UI.Text[] rankingsUI;
+
 #if UNITY_SERVER
     public Stack<int> deck = new Stack<int>();
     public List<int>[] hands = { new List<int>(), new List<int>(), new List<int>(), new List<int>() };
@@ -55,6 +58,7 @@ public class main : MonoBehaviour
 
     public static RoundPhase current_phase;
     public static float phase_timer;
+    public static List<PlayerInfo> rankings = new List<PlayerInfo>();
 #endif
 
     // Start is called before the first frame update
@@ -92,6 +96,11 @@ public class main : MonoBehaviour
         {
             deck.Push(i);
         }
+#else
+        rankings.Add(new PlayerInfo());
+        rankings.Add(new PlayerInfo());
+        rankings.Add(new PlayerInfo());
+        rankings.Add(new PlayerInfo());
 #endif
     }
 
@@ -140,6 +149,15 @@ public class main : MonoBehaviour
         timeUI.text = ((int)phase_timer).ToString();
 
         moneyUI.text = info.money.ToString();
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (enable_ranks)
+            {
+                rankingsUI[i].transform.gameObject.SetActive(true);
+            }
+            rankingsUI[i].text = rankings[i].team.ToString() + " -> " + rankings[i].wins.ToString();
+        }
     }
 #endif
 
