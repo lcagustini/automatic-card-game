@@ -20,6 +20,7 @@ public enum MessageType
     UPDATE_MONEY,
     UPDATE_PHASE,
     UPDATE_RANKINGS,
+    MOVE_MONSTER,
 }
 
 public class PlayerInfo
@@ -352,6 +353,33 @@ public class server : MonoBehaviour
                                             m_Driver.Send(m_Connections[i], writer);
                                         }
                                     }
+                                    break;
+                                }
+                            case MessageType.MOVE_MONSTER:
+                                {
+                                    int id = stream.ReadInt(ref readerCtx);
+                                    float x = stream.ReadFloat(ref readerCtx);
+                                    float z = stream.ReadFloat(ref readerCtx);
+
+                                    Debug.Log("Trying to move monster "+id+" to: ("+x+", "+z+")");
+
+                                    if (card.playerArea[players[i].team].Contains(new Vector2(x, z)) && current_phase == RoundPhase.PREPARE)
+                                    {
+                                        GameObject[] monsters = GameObject.FindGameObjectsWithTag("monster");
+
+                                        foreach (GameObject m_obj in monsters)
+                                        {
+                                            monster m = m_obj.GetComponent<monster>();
+
+                                            if (m.id == id)
+                                            {
+                                                m.transform.position = new Vector3(x, m.transform.position.y, z);
+                                                m.startingPos = m.transform.position;
+                                                break;
+                                            }
+                                        }
+                                    }
+
                                     break;
                                 }
                             case MessageType.PING:

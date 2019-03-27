@@ -2456,6 +2456,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5673297204939197406}
   - component: {fileID: 9175764456396477273}
+  - component: {fileID: 5955103184135716299}
   m_Layer: 0
   m_Name: Knight
   m_TagString: monster
@@ -2498,3 +2499,16 @@ MonoBehaviour:
   death_countdown: 3
   startingPos: {x: 0, y: 0, z: 0}
   startingRot: {x: 0, y: 0, z: 0, w: 0}
+--- !u!65 &5955103184135716299
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8908381203982249484}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 2.8948922, z: 1.1309097}
+  m_Center: {x: 0, y: 1.3761885, z: 0.16549665}

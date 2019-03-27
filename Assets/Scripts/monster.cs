@@ -64,7 +64,7 @@ public class monster : MonoBehaviour
         {
             state = MonsterState.DYING;
             Destroy(transform.gameObject.GetComponent<Rigidbody>());
-            Destroy(transform.gameObject.GetComponent<BoxCollider>());
+            //Destroy(transform.gameObject.GetComponent<BoxCollider>());
         }
 
         switch (state)
@@ -79,7 +79,7 @@ public class monster : MonoBehaviour
                     {
                         if (transform.gameObject.GetComponent<Rigidbody>() == null)
                         {
-                            transform.gameObject.AddComponent<BoxCollider>();
+                            //transform.gameObject.AddComponent<BoxCollider>();
                             transform.gameObject.AddComponent<Rigidbody>();
                         }
                         transform.gameObject.GetComponent<Rigidbody>().useGravity = true;
@@ -183,6 +183,7 @@ public class monster : MonoBehaviour
     private Color[] team_colors = {Color.cyan, new Color(1, 0.5f, 0), new Color(0.5F, 0, 1), Color.yellow};
 
     private GameObject lifeBar;
+    private bool dragging = false;
 
     // Start is called before the first frame update
     void Start()
@@ -192,6 +193,31 @@ public class monster : MonoBehaviour
         GameObject screen = GameObject.Find("Canvas");
 
         lifeBar.transform.SetParent(screen.transform);
+    }
+
+    void OnMouseDown()
+    {
+        dragging = true;
+
+        print("down");
+    }
+
+    void OnMouseUp()
+    {
+        print("up");
+
+        dragging = false;
+
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            if (card.playerArea[team].Contains(new Vector2(hit.point.x, hit.point.z)) && main.current_phase == RoundPhase.PREPARE)
+            {
+                GameObject.Find("Client").GetComponent<testClient>().MoveMonster(id, hit.point.x, hit.point.z);
+            }
+        }
     }
 
     // Update is called once per frame

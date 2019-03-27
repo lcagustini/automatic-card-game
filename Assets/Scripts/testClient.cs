@@ -28,7 +28,7 @@ public class testClient : MonoBehaviour
     {
         m_Driver.Dispose();
     }
-    
+
     // TODO: make it not work when not connected
     public void SendSpawnMonster(int cardid, int monsterIndex, Vector3 pos)
     {
@@ -49,10 +49,24 @@ public class testClient : MonoBehaviour
 
     public void AskNewHand()
     {
+        card.requestLock = true;
+
         // TODO: think if there is something like sizeof(float) for better crossplatformness
         using (var writer = new DataStreamWriter(4, Allocator.Temp))
         {
             writer.Write((int)MessageType.REQUEST_NEW_HAND);
+            m_Driver.Send(m_Connection, writer);
+        }
+    }
+
+    public void MoveMonster(int id, float x, float z)
+    {
+        using (var writer = new DataStreamWriter(16, Allocator.Temp))
+        {
+            writer.Write((int)MessageType.MOVE_MONSTER);
+            writer.Write(id);
+            writer.Write(x);
+            writer.Write(z);
             m_Driver.Send(m_Connection, writer);
         }
     }
@@ -159,6 +173,8 @@ public class testClient : MonoBehaviour
                         }
                     case MessageType.NEW_HAND:
                         {
+                            card.requestLock = false;
+
                             int handSize = stream.ReadInt(ref readerCtx);
                             main m = Camera.main.GetComponent<main>();
 
